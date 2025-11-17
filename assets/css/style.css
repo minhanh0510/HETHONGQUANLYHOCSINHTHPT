@@ -75,3 +75,90 @@ body{background:#f8f9fa;color:#333}
   .form-row{flex-direction:column}
   .form-col{min-width:100%}
 }
+
+/* Thêm các style cho form nhập chỉ tiêu */
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.user-info-footer {
+    background: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 20px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Responsive table */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* CẬP NHẬT: Style cho table container - CUỘN CẢ TRANG */
+.table-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/* Wrapper bên trong - CHỈ CUỘN NGANG NẾU CẦN */
+.table-wrapper {
+    overflow-x: auto; /* Cuộn ngang khi bảng quá rộng */
+    overflow-y: visible; /* Không giới hạn chiều cao - cho phép cuộn toàn trang */
+}
+
+/* Custom scrollbar cho cuộn ngang */
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Bỏ sticky header để cuộn theo trang */
+.student-list-table thead th {
+    background: linear-gradient(180deg, #f8f9fa 0%, #f1f3f5 100%);
+    /* Không dùng position: sticky */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Đảm bảo bảng có độ rộng tối thiểu để cuộn ngang hoạt động */
+.student-list-table {
+    min-width: 1200px;
+    width: 100%;
+    border-collapse: collapse;
+}

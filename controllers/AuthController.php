@@ -13,6 +13,14 @@ class AuthController {
                 header("Location: index.php?controller=studentAdmin&action=index");
             } elseif ($_SESSION['user']['role'] === 'student') {
                 header("Location: index.php?controller=student&action=examRoom");
+            } elseif ($_SESSION['user']['role'] === 'department') {
+                header("Location: index.php?controller=quota&action=index");
+            } elseif ($_SESSION['user']['role'] === 'parent') {
+                header("Location: index.php?controller=parent&action=dashboard");
+            } elseif ($_SESSION['user']['role'] === 'management') { 
+                header("Location: index.php?controller=scoreEdit&action=index");
+            } elseif ($_SESSION['user']['role'] === 'teacher') {
+                header("Location: index.php?controller=classroom&action=index");
             }
             exit;
         }
@@ -30,6 +38,14 @@ class AuthController {
                     header("Location: index.php?controller=studentAdmin&action=index");
                 } elseif ($user['role'] === 'student') {
                     header("Location: index.php?controller=student&action=examRoom");
+                } elseif ($user['role'] === 'department') {
+                    header("Location: index.php?controller=quota&action=index"); 
+                } elseif ($user['role'] === 'parent') {
+                    header("Location: index.php?controller=parent&action=dashboard");
+                } elseif ($user['role'] === 'management') { 
+                    header("Location: index.php?controller=scoreEdit&action=index"); 
+                } elseif ($user['role'] === 'teacher') {
+                    header("Location: index.php?controller=classroom&action=index");
                 } else {
                     $error = "Role chưa được hỗ trợ.";
                 }

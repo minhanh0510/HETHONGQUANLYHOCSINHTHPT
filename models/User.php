@@ -4,28 +4,46 @@ class User {
     public function __construct($db){ $this->db = $db; }
 
     public function login($username, $password) {
-        $stmt = $this->db->prepare("SELECT tk.*, nd.hoVaTen, hs.maHS 
-                                   FROM TAIKHOAN tk 
-                                   JOIN NGUOIDUNG nd ON tk.maNguoiDung = nd.maNguoiDung 
-                                   LEFT JOIN HOCSINH hs ON nd.maNguoiDung = hs.maNguoiDung 
-                                   WHERE tk.tenDangNhap = ? AND tk.matKhau = MD5(?) AND tk.trangThai = 'HoatDong'");
-        // Join with NGUOIDUNG to get display name
-        $sql = "SELECT tk.*, nd.hoVaTen
-                FROM TAIKHOAN tk
-                LEFT JOIN NGUOIDUNG nd ON tk.maNguoiDung = nd.maNguoiDung
+        // Query với JOIN để lấy thêm teacher_id, student_id, parent_id
+        $sql = "SELECT tk.*, 
+                       nd.hoVaTen, 
+                       nd.email,
+                       gv.maGV as teacher_id,
+                       hs.maHS as student_id,
+                       ph.maPH as parent_id
+                FROM taikhoan tk
+                JOIN nguoidung nd ON tk.maNguoiDung = nd.maNguoiDung
+                LEFT JOIN giaovien gv ON nd.maNguoiDung = gv.maNguoiDung
+                LEFT JOIN hocsinh hs ON nd.maNguoiDung = hs.maNguoiDung
+                LEFT JOIN phuhuynh ph ON nd.maNguoiDung = ph.maNguoiDung
                 WHERE tk.tenDangNhap = ? AND tk.trangThai = 'HoatDong'";
+        
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$username]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row) return false;
-
-        // Kiểm tra mật khẩu: chấp nhận plain-text hoặc MD5
-        $inputMd5 = md5($password);
-        if ($row['matKhau'] !== $password && $row['matKhau'] !== $inputMd5) {
+        
+        if (!$row) {
+            error_log("User not found: " . $username);
             return false;
         }
 
-        // Map database role names to application roles used in controllers/views
+        // Debug: ghi log thông tin user tìm thấy
+        error_log("User found: " . print_r($row, true));
+
+        // Kiểm tra mật khẩu - THÊM DEBUG
+        $inputMd5 = md5($password);
+        error_log("Input password: " . $password);
+        error_log("Input MD5: " . $inputMd5);
+        error_log("Stored password: " . $row['matKhau']);
+
+        if ($row['matKhau'] !== $password && $row['matKhau'] !== $inputMd5) {
+            error_log("Password mismatch for user: " . $username);
+            return false;
+        }
+
+        // Sử dụng trực tiếp vaiTro từ TAIKHOAN - THÊM DEBUG
+        error_log("User role from DB: " . $row['vaiTro']);
+
         $roleMap = [
             'QuanTri' => 'admin',
             'HocSinh' => 'student',
@@ -35,37 +53,22 @@ class User {
             'SoGiaoDuc' => 'department'
         ];
 
-        $appRole = $roleMap[$row['vaiTro']] ?? strtolower($row['vaiTro']);
-
-        // Normalize returned user array so the rest of app can expect 'role' and 'ho_ten'
+        $appRole = $roleMap[$row['vaiTro']] ?? 'unknown';
+        error_log("Mapped role: " . $appRole);
         $user = [
             'username' => $row['tenDangNhap'],
             'role' => $appRole,
-            'ho_ten' => $row['hoVaTen'] ?? $row['tenDangNhap'],
+            'hoVaTen' => $row['hoVaTen'] ?? $row['tenDangNhap'],
             'email' => $row['email'] ?? null,
             'maNguoiDung' => $row['maNguoiDung'] ?? null,
-            // keep raw db fields in case other controllers expect them
+            'teacher_id' => $row['teacher_id'] ?? null, 
+            'student_id' => $row['student_id'] ?? null, 
+            'parent_id' => $row['parent_id'] ?? null,   
             'raw' => $row
         ];
 
+        error_log("Final user array: " . print_r($user, true));
         return $user;
-        
-        if ($user) {
-            // Map vaiTro từ CSDL sang role trong hệ thống
-            $roleMapping = [
-                'QuanTri' => 'admin',
-                'HocSinh' => 'student',
-                'GiaoVien' => 'teacher',
-                'PhuHuynh' => 'parent',
-                'BanGiamHieu' => 'manager',
-                'SoGiaoDuc' => 'department'
-            ];
-            
-            $user['role'] = $roleMapping[$user['vaiTro']] ?? $user['vaiTro'];
-            $user['student_id'] = $user['maHS'] ?? null;
-            
-            return $user;
-        }
-        return false;
     }
 }
+?>

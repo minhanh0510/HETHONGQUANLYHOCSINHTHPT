@@ -1,6 +1,6 @@
 <?php
 $host = "localhost";
-$dbname = "QuanLyHocSinh";
+$dbname = "quanlyhocsinh"; // Tên database trong file SQL
 $username = "root";
 $password = "";
 

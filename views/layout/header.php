@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>Hệ thống Quản lý Giáo dục</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
   <style>
     body {
@@ -28,15 +30,46 @@
       left: 0;
       width: 100%;
       z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    header h1 { font-size: 20px; margin: 0; }
-    header .user-info a { color: #fff; text-decoration: underline; }
+    header h1 { 
+      font-size: 20px; 
+      margin: 0; 
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    
+    header .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    
+    header .user-info .username {
+      font-weight: 600;
+    }
+    
+    header .user-info .separator {
+      color: rgba(255,255,255,0.6);
+    }
+    
+    header .user-info a { 
+      color: #fff; 
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    
+    header .user-info a:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
 
     .container {
       display: flex;
       flex: 1;
-      margin-top: 60px; /* để header không đè sidebar */
+      margin-top: 60px;
       height: calc(100vh - 60px);
       overflow: hidden;
     }
@@ -51,7 +84,7 @@
       bottom: 0;
       left: 0;
       overflow-y: auto;
-      z-index: 9999;
+      z-index: 999;
     }
 
     .sidebar a {
@@ -64,15 +97,19 @@
       transition: background 0.2s;
     }
 
-    .sidebar a:hover { background: #334155; }
+    .sidebar a:hover { 
+      background: #334155; 
+    }
 
     .main-content {
-      flex: 1;
-      margin-left: 270px;
+      position: fixed;
+      left: 270px;
+      top: 80px;
+      right: 0;
+      bottom: 40px;
       padding: 20px;
       background: white;
       overflow-y: auto;
-      min-height: 100vh;
       z-index: 1;
     }
 
@@ -86,6 +123,7 @@
       bottom: 0;
       left: 0;
       width: 100%;
+      z-index: 1000;
     }
   </style>
 </head>
@@ -93,8 +131,22 @@
 <header>
   <h1>HỆ THỐNG QUẢN LÝ GIÁO DỤC</h1>
   <div class="user-info">
-    <?= $_SESSION['user']['ho_ten'] ?? 'Admin'; ?> |
-    <a href="index.php?controller=auth&action=logout">Đăng xuất</a>
+    <span class="username">
+      <?php 
+      // Hiển thị tên người dùng
+      if (isset($_SESSION['user']['hoVaTen'])) {
+          echo htmlspecialchars($_SESSION['user']['hoVaTen']);
+      } elseif (isset($_SESSION['user']['ho_ten'])) {
+          echo htmlspecialchars($_SESSION['user']['ho_ten']);
+      } else {
+          echo 'Người dùng';
+      }
+      ?>
+    </span>
+    <span class="separator">|</span>
+    <a href="index.php?controller=auth&action=logout">
+      <i class="fas fa-sign-out-alt"></i> Đăng xuất
+    </a>
   </div>
 </header>
 
