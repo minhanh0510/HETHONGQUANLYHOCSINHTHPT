@@ -1,95 +1,155 @@
 <?php
 class Student {
     private $db;
-    public function __construct($db) { $this->db = $db; }
 
+    public function __construct($db) {
+        $this->db = $db;
+    }
+
+    // Lấy toàn bộ hồ sơ + thông tin lớp/khoi/ban
     public function getAll() {
-        $sql = "SELECT hs.maHS, hs.dangThaiHocTap, hs.soBaoDanh, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh, nd.diaChi, nd.soDienThoai, nd.email,
-                       pc.maLop, l.tenLop, pc.maBan, pc.namHoc, pc.trangThai as trangThaiPhanCong
+        $sql = "SELECT 
+                    hs.maHS,
+                    hs.dangThaiHocTap,
+                    hs.soBaoDanh,
+                    hs.maNguoiDung,
+                    hs.maPhong,
+                    hs.maLop,
+                    nd.hoVaTen,
+                    nd.gioiTinh,
+                    nd.ngaySinh,
+                    nd.diaChi,
+                    nd.soDienThoai,
+                    nd.email,
+                    l.tenLop,
+                    l.maKhoi,
+                    k.tenKhoi,
+                    l.maBan
                 FROM HOCSINH hs
                 JOIN NGUOIDUNG nd ON hs.maNguoiDung = nd.maNguoiDung
-                LEFT JOIN PHANCONG pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
-                LEFT JOIN LOP l ON pc.maLop = l.maLop
-                ORDER BY pc.maLop, hs.maHS";
+                LEFT JOIN LOP l       ON hs.maLop = l.maLop
+                LEFT JOIN KHOI k      ON l.maKhoi = k.maKhoi
+                ORDER BY l.maKhoi, l.tenLop, hs.maHS";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getById($id) {
-        $sql = "SELECT hs.*, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh, nd.diaChi, nd.soDienThoai, nd.email,
-                       pc.maLop, l.tenLop, pc.maBan, pc.namHoc, pc.trangThai as trangThaiPhanCong
+    public function getById($maHS) {
+        $sql = "SELECT 
+                    hs.maHS,
+                    hs.dangThaiHocTap,
+                    hs.soBaoDanh,
+                    hs.maNguoiDung,
+                    hs.maPhong,
+                    hs.maLop,
+                    nd.hoVaTen,
+                    nd.gioiTinh,
+                    nd.ngaySinh,
+                    nd.diaChi,
+                    nd.soDienThoai,
+                    nd.email,
+                    l.tenLop,
+                    l.maKhoi,
+                    k.tenKhoi,
+                    l.maBan
                 FROM HOCSINH hs
                 JOIN NGUOIDUNG nd ON hs.maNguoiDung = nd.maNguoiDung
-                LEFT JOIN PHANCONG pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
-                LEFT JOIN LOP l ON pc.maLop = l.maLop
+                LEFT JOIN LOP l  ON hs.maLop = l.maLop
+                LEFT JOIN KHOI k ON l.maKhoi = k.maKhoi
                 WHERE hs.maHS = ?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$id]);
+        $stmt->execute([$maHS]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function add($dataHocSinh, $dataNguoiDung) {
-        try {
-            $this->db->beginTransaction();
+    // Thêm hồ sơ mới (SBD tự sinh, lớp/phòng có thể NULL)
+public function add($dataHocSinh, $dataNguoiDung) {
+    try {
+        $this->db->beginTransaction();
 
-            // Thêm NGUOIDUNG
-            $stmt1 = $this->db->prepare("INSERT INTO NGUOIDUNG(maNguoiDung, hoVaTen, gioiTinh, ngaySinh, diaChi, soDienThoai, email) 
-                                       VALUES(:maNguoiDung, :hoVaTen, :gioiTinh, :ngaySinh, :diaChi, :soDienThoai, :email)");
-            $stmt1->execute($dataNguoiDung);
+        // Thêm NGUOIDUNG
+        $stmt1 = $this->db->prepare("
+            INSERT INTO NGUOIDUNG(maNguoiDung, hoVaTen, gioiTinh, ngaySinh, diaChi, soDienThoai, email)
+            VALUES(:maNguoiDung, :hoVaTen, :gioiTinh, :ngaySinh, :diaChi, :soDienThoai, :email)
+        ");
+        $stmt1->execute($dataNguoiDung);
 
-            // Thêm HOCSINH
-            $stmt2 = $this->db->prepare("INSERT INTO HOCSINH(maHS, dangThaiHocTap, soBaoDanh, maNguoiDung) 
-                                       VALUES(:maHS, :dangThaiHocTap, :soBaoDanh, :maNguoiDung)");
-            $stmt2->execute($dataHocSinh);
+        // Thêm HOCSINH
+        // HOCSINH: maHS, dangThaiHocTap, soBaoDanh, maNguoiDung, maPhong, maLop
+        $stmt2 = $this->db->prepare("
+            INSERT INTO HOCSINH(maHS, dangThaiHocTap, soBaoDanh, maNguoiDung, maPhong, maLop)
+            VALUES(:maHS, :dangThaiHocTap, :soBaoDanh, :maNguoiDung, NULL, NULL)
+        ");
+        $stmt2->execute($dataHocSinh);
 
-            $this->db->commit();
-            return true;
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            return false;
-        }
+        $this->db->commit();
+        return true;
+    } catch (Exception $e) {
+        $this->db->rollBack();
+        return false;
     }
+}
 
-    public function update($id, $dataHocSinh, $dataNguoiDung) {
-        try {
-            $this->db->beginTransaction();
 
-            // Update NGUOIDUNG
-            $stmt1 = $this->db->prepare("UPDATE NGUOIDUNG SET hoVaTen=:hoVaTen, gioiTinh=:gioiTinh, ngaySinh=:ngaySinh, 
-                                       diaChi=:diaChi, soDienThoai=:soDienThoai, email=:email 
-                                       WHERE maNguoiDung=:maNguoiDung");
-            $stmt1->execute($dataNguoiDung);
+    // Cập nhật hồ sơ (không đổi maHS, maNguoiDung)
+  public function update($maHS, $dataHocSinh, $dataNguoiDung) {
+    try {
+        $this->db->beginTransaction();
 
-            // Update HOCSINH
-            $stmt2 = $this->db->prepare("UPDATE HOCSINH SET dangThaiHocTap=:dangThaiHocTap, soBaoDanh=:soBaoDanh 
-                                       WHERE maHS=:maHS");
-            $stmt2->execute($dataHocSinh);
+        // Update bảng NGUOIDUNG
+        $stmt1 = $this->db->prepare("
+            UPDATE NGUOIDUNG 
+            SET hoVaTen     = :hoVaTen,
+                gioiTinh    = :gioiTinh,
+                ngaySinh    = :ngaySinh,
+                diaChi      = :diaChi,
+                soDienThoai = :soDienThoai,
+                email       = :email
+            WHERE maNguoiDung = :maNguoiDung
+        ");
+        $stmt1->execute($dataNguoiDung);
 
-            $this->db->commit();
-            return true;
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            return false;
-        }
+        // Update bảng HOCSINH (chỉ trạng thái + SBD)
+        $stmt2 = $this->db->prepare("
+            UPDATE HOCSINH 
+            SET dangThaiHocTap = :dangThaiHocTap,
+                soBaoDanh      = :soBaoDanh
+            WHERE maHS = :maHS
+        ");
+        $stmt2->execute([
+            'dangThaiHocTap' => $dataHocSinh['dangThaiHocTap'],
+            'soBaoDanh'      => $dataHocSinh['soBaoDanh'],
+            'maHS'           => $maHS
+        ]);
+
+        $this->db->commit();
+        return true;
+    } catch (Exception $e) {
+        $this->db->rollBack();
+        return false;
     }
+}
 
-    public function delete($id) {
+
+    public function delete($maHS) {
         try {
             $this->db->beginTransaction();
-            
-            // Lấy mã người dùng trước khi xóa
+
+            // Lấy mã người dùng
             $stmt = $this->db->prepare("SELECT maNguoiDung FROM HOCSINH WHERE maHS = ?");
-            $stmt->execute([$id]);
+            $stmt->execute([$maHS]);
             $maNguoiDung = $stmt->fetchColumn();
-            
+
             // Xóa HOCSINH
             $stmt = $this->db->prepare("DELETE FROM HOCSINH WHERE maHS = ?");
-            $stmt->execute([$id]);
-            
+            $stmt->execute([$maHS]);
+
             // Xóa NGUOIDUNG
-            $stmt = $this->db->prepare("DELETE FROM NGUOIDUNG WHERE maNguoiDung = ?");
-            $stmt->execute([$maNguoiDung]);
-            
+            if ($maNguoiDung) {
+                $stmt = $this->db->prepare("DELETE FROM NGUOIDUNG WHERE maNguoiDung = ?");
+                $stmt->execute([$maNguoiDung]);
+            }
+
             $this->db->commit();
             return true;
         } catch (Exception $e) {
@@ -98,31 +158,48 @@ class Student {
         }
     }
 
+    // Lọc theo lớp, giới tính, từ khóa
     public function filter($maLop, $gioiTinh, $keyword) {
-        $sql = "SELECT hs.maHS, hs.dangThaiHocTap, hs.soBaoDanh, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh, nd.diaChi, nd.soDienThoai, nd.email,
-                       pc.maLop, l.tenLop, pc.maBan, pc.namHoc, pc.trangThai as trangThaiPhanCong
+        $sql = "SELECT 
+                    hs.maHS,
+                    hs.dangThaiHocTap,
+                    hs.soBaoDanh,
+                    hs.maNguoiDung,
+                    hs.maPhong,
+                    hs.maLop,
+                    nd.hoVaTen,
+                    nd.gioiTinh,
+                    nd.ngaySinh,
+                    nd.diaChi,
+                    nd.soDienThoai,
+                    nd.email,
+                    l.tenLop,
+                    l.maKhoi,
+                    k.tenKhoi,
+                    l.maBan
                 FROM HOCSINH hs
                 JOIN NGUOIDUNG nd ON hs.maNguoiDung = nd.maNguoiDung
-                LEFT JOIN PHANCONG pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
-                LEFT JOIN LOP l ON pc.maLop = l.maLop
+                LEFT JOIN LOP l  ON hs.maLop = l.maLop
+                LEFT JOIN KHOI k ON l.maKhoi = k.maKhoi
                 WHERE 1=1";
         $params = [];
-        
-        if ($maLop) { 
-            $sql .= " AND pc.maLop = ?"; 
-            $params[] = $maLop; 
+
+        if ($maLop !== '') {
+            $sql .= " AND hs.maLop = ?";
+            $params[] = $maLop;
         }
-        if ($gioiTinh) { 
-            $sql .= " AND nd.gioiTinh = ?"; 
-            $params[] = $gioiTinh; 
+        if ($gioiTinh !== '') {
+            $sql .= " AND nd.gioiTinh = ?";
+            $params[] = $gioiTinh;
         }
-        if ($keyword) { 
-            $sql .= " AND (nd.hoVaTen LIKE ? OR hs.maHS LIKE ?)"; 
-            $params[] = "%$keyword%"; 
-            $params[] = "%$keyword%"; 
+        if ($keyword !== '') {
+            $sql .= " AND (nd.hoVaTen LIKE ? OR hs.maHS LIKE ?)";
+            $params[] = "%$keyword%";
+            $params[] = "%$keyword%";
         }
-        
-        $sql .= " ORDER BY pc.maLop, hs.maHS";
+
+        $sql .= " ORDER BY l.maKhoi, l.tenLop, hs.maHS";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -6,35 +6,31 @@ class Exam {
         $this->db = $db;
     }
 
-    /**
-     * Lấy danh sách phòng thi theo học sinh + bộ lọc
-     */
+    // Lấy danh sách phòng thi của 1 học sinh
     public function getByStudent($maHS, $filters = []) {
-        $sql = "
-            SELECT 
-                dst.maDSThi,
-                dst.soBaoDanh,
-                hs.maHS,
-                nd.hoVaTen,
-                pt.tenPhong          AS phong,
-                pt.maPhong,
-                pcgt.ngayThi         AS ngayThi,
-                pcgt.caThi           AS caThi,
-                mh.tenMon            AS mon_thi,
-                mh.maMon
-            FROM danhsachthi dst
-            JOIN hocsinh hs       ON dst.maHS    = hs.maHS
-            JOIN nguoidung nd     ON hs.maNguoiDung = nd.maNguoiDung
-            JOIN phongthi pt      ON dst.maPhong = pt.maPhong
-            LEFT JOIN pcgiamthi pcgt ON pt.maPhong = pcgt.maPhong
-            JOIN monhoc mh        ON pt.maMon    = mh.maMon
-            WHERE dst.maHS = ?
-              AND dst.trangThai = 'DaXepPhong'
-        ";
+        $sql = "SELECT 
+                    dst.maDSThi,
+                    dst.soBaoDanh,
+                    pt.maPhong,
+                    pt.tenPhong      AS phong,
+                    pcgt.ngayThi,
+                    pcgt.caThi,
+                    hs.maHS,
+                    nd.hoVaTen,
+                    mh.maMon,
+                    mh.tenMon        AS mon_thi
+                FROM danhsachthi dst
+                JOIN phongthi   pt   ON dst.maPhong = pt.maPhong
+                JOIN pcgiamthi  pcgt ON dst.maPhong = pcgt.maPhong
+                JOIN hocsinh    hs   ON dst.maHS = hs.maHS
+                JOIN nguoidung  nd   ON hs.maNguoiDung = nd.maNguoiDung
+                JOIN monhoc     mh   ON pt.maMon = mh.maMon
+                WHERE dst.maHS = ? 
+                  AND dst.trangThai = 'DaXepPhong'";
 
         $params = [$maHS];
 
-        // Lọc theo môn thi (tên môn)
+        // Lọc theo tên môn (tenMon)
         if (!empty($filters['mon_thi'])) {
             $sql .= " AND mh.tenMon = ?";
             $params[] = $filters['mon_thi'];
@@ -46,55 +42,41 @@ class Exam {
             $params[] = $filters['ngay_thi'];
         }
 
-        // Lọc theo phòng thi (tên phòng)
+        // Lọc theo tên phòng thi
         if (!empty($filters['phong'])) {
             $sql .= " AND pt.tenPhong = ?";
             $params[] = $filters['phong'];
         }
 
-        $sql .= " ORDER BY pcgt.ngayThi, pcgt.caThi, mh.tenMon";
+        $sql .= " ORDER BY pcgt.ngayThi, pcgt.caThi, pt.tenPhong";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Combobox môn thi: lấy TẤT CẢ môn học
-     */
-    public function getDistinctMon() {
-        $sql = "
-            SELECT mh.tenMon AS mon_thi
-            FROM monhoc mh
-            ORDER BY mh.tenMon
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    // Danh sách môn thi (để fill combobox)
+public function getDistinctMon() {
+    $sql = "SELECT tenMon AS mon_thi FROM MONHOC ORDER BY tenMon";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-    /**
-     * Combobox phòng thi: lấy TẤT CẢ phòng học
-     */
-    public function getDistinctPhong() {
-        $sql = "
-            SELECT ph.tenPhong AS phong
-            FROM phonghoc ph
-            ORDER BY ph.tenPhong
-        ";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+public function getDistinctPhong() {
+    $sql = "SELECT tenPhong AS phong FROM PHONGTHI ORDER BY tenPhong";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     public function countNgayThi($maHS) {
-        $sql = "
-            SELECT COUNT(DISTINCT pcgt.ngayThi) AS count
-            FROM danhsachthi dst
-            JOIN pcgiamthi pcgt ON dst.maPhong = pcgt.maPhong
-            WHERE dst.maHS = ?
-              AND dst.trangThai = 'DaXepPhong'
-        ";
+        $sql = "SELECT COUNT(DISTINCT pcgt.ngayThi) AS count
+                FROM danhsachthi dst
+                JOIN pcgiamthi pcgt ON dst.maPhong = pcgt.maPhong
+                WHERE dst.maHS = ? 
+                  AND dst.trangThai = 'DaXepPhong'";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$maHS]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -103,14 +85,13 @@ class Exam {
 
     public function countTietHomNay($maHS) {
         $today = date('Y-m-d');
-        $sql = "
-            SELECT COUNT(*) AS count
-            FROM danhsachthi dst
-            JOIN pcgiamthi pcgt ON dst.maPhong = pcgt.maPhong
-            WHERE dst.maHS = ?
-              AND dst.trangThai = 'DaXepPhong'
-              AND pcgt.ngayThi = ?
-        ";
+        $sql = "SELECT COUNT(*) AS count
+                FROM danhsachthi dst
+                JOIN pcgiamthi pcgt ON dst.maPhong = pcgt.maPhong
+                WHERE dst.maHS = ?
+                  AND pcgt.ngayThi = ?
+                  AND dst.trangThai = 'DaXepPhong'";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$maHS, $today]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);

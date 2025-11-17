@@ -2,117 +2,216 @@
 <?php include "views/layout/sidebar_admin.php"; ?>
 
 <div class="main-content">
+  <!-- TIÊU ĐỀ TRANG -->
   <div class="content-header">
-    <div class="page-title">🏫 Phân công khối / lớp</div>
+    <div class="page-title">🏫 Phân công khối, lớp</div>
   </div>
 
-  <div class="filter-section">
-    <a href="index.php?controller=assignment&action=index&mode=new" 
-       class="btn <?= ($mode==='new')?'btn-primary':'btn-outline' ?>">Phân công mới</a>
-    <a href="index.php?controller=assignment&action=index&mode=edit" 
-       class="btn <?= ($mode==='edit')?'btn-primary':'btn-outline' ?>">Điều chỉnh phân công</a>
+  <!-- THANH CÔNG CỤ: LỌC KHỐI + CHỌN CHẾ ĐỘ -->
+  <div class="card" style="margin-bottom:15px;">
+    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+      <strong>Thanh công cụ phân công</strong>
+      <span style="font-size:12px;color:#888;">
+        Chọn khối &amp; chế độ làm việc
+      </span>
+    </div>
+    <div class="card-body">
+      <form method="GET" action="index.php" class="filter-section" style="margin:0;">
+        <input type="hidden" name="controller" value="assignment">
+        <input type="hidden" name="action" value="index">
+        <input type="hidden" name="mode" value="<?= htmlspecialchars($mode) ?>">
+
+        <div class="form-row" style="align-items:flex-end;">
+          <div class="form-col">
+            <label class="form-label">Khối</label>
+            <select name="khoi" class="form-control">
+              <option value="">Tất cả</option>
+              <option value="K10" <?= ($khoiFilter === 'K10' ? 'selected' : '') ?>>Khối 10</option>
+              <option value="K11" <?= ($khoiFilter === 'K11' ? 'selected' : '') ?>>Khối 11</option>
+              <option value="K12" <?= ($khoiFilter === 'K12' ? 'selected' : '') ?>>Khối 12</option>
+            </select>
+          </div>
+
+          <div class="form-col" style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary">Lọc</button>
+
+            <a href="index.php?controller=assignment&action=index&mode=new" 
+               class="btn <?= ($mode==='new')?'btn-success':'btn-outline' ?>">
+              ➕ Phân công mới
+            </a>
+
+            <a href="index.php?controller=assignment&action=index&mode=edit" 
+               class="btn <?= ($mode==='edit')?'btn-warning':'btn-outline' ?>">
+              ✏️ Điều chỉnh phân công
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 
   <?php if (!empty($message)): ?>
     <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
   <?php endif; ?>
 
-  <form method="POST" action="index.php?controller=assignment&action=save" id="assignForm">
-    <input type="hidden" name="mode" value="<?= htmlspecialchars($mode) ?>">
-
-    <div class="form-row">
-      <div class="form-col">
-        <label class="form-label">Khối</label>
-        <select id="gradeSelect" class="form-control" onchange="filterByGrade()">
-          <option value="">Tất cả</option>
-          <?php foreach(['10','11','12'] as $g): ?>
-            <option value="<?= $g ?>"><?= $g ?></option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-
-      <div class="form-col">
-        <label class="form-label">Lớp</label>
-        <select name="lop" id="classSelect" class="form-control" required>
-          <option value="">-- Chọn lớp --</option>
-          <?php foreach($lopList as $lop): ?>
-            <option value="<?= $lop['maLop'] ?>" data-grade="<?= substr($lop['maLop'], 1, 2) ?>">
-              <?= htmlspecialchars($lop['tenLop']) ?> (<?= $lop['siSo'] ?>/40)
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-
-      <div class="form-col">
-        <label class="form-label">Ban</label>
-        <select name="ban" class="form-control" required>
-          <option value="TN">Tự nhiên</option>
-          <option value="XH">Xã hội</option>
-        </select>
-      </div>
-
-      <div class="form-col" style="display:flex;align-items:flex-end;">
-        <button type="submit" class="btn btn-success">💾 Lưu phân công</button>
-        <button type="button" class="btn btn-warning" style="margin-left:10px;" onclick="cancelAssign()">❌ Hủy</button>
-      </div>
+  <!-- KHỐI CHÍNH: FORM PHÂN CÔNG -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+      <strong><?= ($mode === 'edit') ? 'Điều chỉnh phân công' : 'Phân công mới' ?></strong>
+      <span style="font-size:12px;color:#888;">
+        Bước 1: chọn học sinh &amp; khối · Bước 2: chọn lớp và lưu
+      </span>
     </div>
+    <div class="card-body">
+      <form method="POST" action="index.php?controller=assignment&action=save" id="assignForm">
+        <input type="hidden" name="mode" value="<?= htmlspecialchars($mode) ?>">
 
-    <div class="content-header" style="margin-top: 15px;">
-      <h3><?= ($mode==='new')?'Danh sách học sinh chưa phân công':'Danh sách học sinh đã phân công' ?></h3>
+        <!-- HÀNG 1: HỌC SINH + KHỐI -->
+        <div class="form-row">
+          <!-- HỌC SINH -->
+          <div class="form-col">
+            <label class="form-label">Học sinh</label>
+            <?php if ($mode === 'edit' && !empty($selectedStudent)): ?>
+              <input type="hidden" name="maHS" value="<?= htmlspecialchars($selectedStudent['maHS']) ?>">
+              <select class="form-control" disabled>
+                <option>
+                  <?= htmlspecialchars($selectedStudent['maHS'] . ' - ' . $selectedStudent['hoVaTen']) ?>
+                </option>
+              </select>
+            <?php else: ?>
+              <select name="maHS" class="form-control" required>
+                <option value="">-- Chọn học sinh --</option>
+                <?php foreach($studentOptions as $st): ?>
+                  <option value="<?= htmlspecialchars($st['maHS']) ?>">
+                    <?= htmlspecialchars($st['maHS'] . ' - ' . $st['hoVaTen']) ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            <?php endif; ?>
+          </div>
+
+          <!-- KHỐI -->
+          <div class="form-col">
+            <label class="form-label">Khối</label>
+            <?php $khoiValue = $selectedStudent['maKhoi'] ?? ''; ?>
+            <select id="khoiSelectForm" class="form-control" onchange="syncKhoiAndFilterLop()">
+              <option value="">-- Chọn khối --</option>
+              <option value="K10" <?= ($khoiValue === 'K10' ? 'selected' : '') ?>>Khối 10</option>
+              <option value="K11" <?= ($khoiValue === 'K11' ? 'selected' : '') ?>>Khối 11</option>
+              <option value="K12" <?= ($khoiValue === 'K12' ? 'selected' : '') ?>>Khối 12</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- HÀNG 2: LỚP + NÚT LƯU -->
+        <div class="form-row" style="margin-top:12px;align-items:flex-end;">
+          <!-- LỚP -->
+          <div class="form-col">
+            <label class="form-label">Lớp</label>
+            <?php $lopCurrent = $selectedStudent['maLop'] ?? ''; ?>
+            <select name="lop" id="lopSelectForm" class="form-control" required>
+              <option value="">-- Chọn lớp --</option>
+              <?php foreach($lopList as $lop): ?>
+                <?php
+                  $khoiLop  = $lop['maKhoi'] ?? '';
+                  $selected = ($lopCurrent === $lop['maLop']) ? 'selected' : '';
+                ?>
+                <option value="<?= htmlspecialchars($lop['maLop']) ?>"
+                        data-khoi="<?= htmlspecialchars($khoiLop) ?>"
+                        <?= $selected ?>>
+                  <?= htmlspecialchars($lop['tenLop']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+
+          <!-- NÚT LƯU / HỦY -->
+          <div class="form-col" style="display:flex;justify-content:flex-end;gap:10px;">
+            <button type="submit" class="btn btn-primary">
+              💾 Lưu phân công
+            </button>
+            <a href="index.php?controller=assignment&action=index&mode=<?= htmlspecialchars($mode) ?>" 
+               class="btn btn-secondary">
+              ❌ Hủy thao tác
+            </a>
+          </div>
+        </div>
+
+        <p style="margin-top:10px;font-size:13px;color:#666;">
+          • Hệ thống kiểm tra sĩ số lớp dựa trên bảng <strong>HOCSINH</strong> 
+          và giới hạn <strong>siSo</strong> trong bảng <strong>LOP</strong>.
+        </p>
+      </form>
     </div>
+  </div>
 
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th><input type="checkbox" id="chkAll" onclick="toggleAll(this)"></th>
-          <th>Mã HS</th>
-          <th>Họ tên</th>
-          <th>Giới tính</th>
-          <th>Ngày sinh</th>
-          <th>Lớp hiện tại</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (!empty($rows)): foreach($rows as $r): ?>
+  <!-- BẢNG DANH SÁCH PHÂN CÔNG -->
+  <div class="card">
+    <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;font-size:16px;">Danh sách phân công hiện tại</h3>
+      <?php if ($mode === 'edit'): ?>
+        <span style="font-size:12px;color:#888;">
+          Chọn "Điều chỉnh" để nạp lại thông tin vào form
+        </span>
+      <?php endif; ?>
+    </div>
+    <div class="card-body" style="padding-top:10px;">
+      <table class="data-table">
+        <thead>
           <tr>
-            <td><input type="checkbox" name="hoc_sinh[]" value="<?= htmlspecialchars($r['maHS']) ?>"></td>
-            <td><?= htmlspecialchars($r['maHS']) ?></td>
-            <td><?= htmlspecialchars($r['hoVaTen']) ?></td>
-            <td><?= htmlspecialchars($r['gioiTinh']) ?></td>
-            <td><?= htmlspecialchars($r['ngaySinh']) ?></td>
-            <td><?= htmlspecialchars($r['tenLop'] ?? ($r['maLop'] ?? 'Chưa phân công')) ?></td>
+            <th>Mã HS</th>
+            <th>Họ tên</th>
+            <th>Khối</th>
+            <th>Lớp</th>
+            <th>Ban</th>
+            <?php if ($mode === 'edit'): ?>
+              <th>Thao tác</th>
+            <?php endif; ?>
           </tr>
-        <?php endforeach; else: ?>
-          <tr><td colspan="6" style="text-align:center;">Không có học sinh nào.</td></tr>
-        <?php endif; ?>
-      </tbody>
-    </table>
-  </form>
+        </thead>
+        <tbody>
+          <?php if (!empty($rows)): foreach($rows as $r): ?>
+            <tr>
+              <td><?= htmlspecialchars($r['maHS']) ?></td>
+              <td><?= htmlspecialchars($r['hoVaTen']) ?></td>
+              <td><?= htmlspecialchars($r['tenKhoi'] ?? $r['maKhoi']) ?></td>
+              <td><?= htmlspecialchars($r['tenLop']) ?></td>
+              <td><?= htmlspecialchars($r['maBan']) ?></td>
+              <?php if ($mode === 'edit'): ?>
+                <td>
+                  <a href="index.php?controller=assignment&action=index&mode=edit&maHS=<?= urlencode($r['maHS']) ?>&khoi=<?= urlencode($khoiFilter) ?>"
+                     class="btn btn-info btn-sm">
+                    Điều chỉnh
+                  </a>
+                </td>
+              <?php endif; ?>
+            </tr>
+          <?php endforeach; else: ?>
+            <tr>
+              <td colspan="<?= ($mode === 'edit') ? 6 : 5 ?>" style="text-align:center;">
+                Không có dữ liệu phân công.
+              </td>
+            </tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <script>
-function toggleAll(src){
-    document.querySelectorAll('input[name="hoc_sinh[]"]').forEach(c=>c.checked=src.checked);
-}
-
-function filterByGrade(){
-  const g = document.getElementById('gradeSelect').value;
-  document.querySelectorAll('#classSelect option').forEach(o=>{
-    if(!o.value) return;
-    const grade = o.dataset.grade;
-    o.style.display = (g==='' || grade === g) ? 'block' : 'none';
+function syncKhoiAndFilterLop() {
+  const khoi = document.getElementById('khoiSelectForm').value;
+  const lopSelect = document.getElementById('lopSelectForm');
+  Array.from(lopSelect.options).forEach(opt => {
+    if (!opt.value) return;
+    const k = opt.getAttribute('data-khoi');
+    opt.style.display = (!khoi || khoi === k) ? 'block' : 'none';
   });
 }
 
-function cancelAssign(){
-  if(confirm("Bạn có chắc muốn hủy thao tác?")) {
-    window.location='index.php?controller=assignment&action=index';
-  }
-}
-
-// Khởi tạo filter khi trang load
 document.addEventListener('DOMContentLoaded', function() {
-    filterByGrade();
+  syncKhoiAndFilterLop();
 });
 </script>
 

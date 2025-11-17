@@ -44,17 +44,18 @@ $avatarText = 'HS';
                     <input type="date" class="form-control" name="ngay_thi" value="<?= htmlspecialchars($ngay_loc) ?>">
                 </div>
 
-                <div class="form-col">
-                    <label class="form-label">Phòng thi</label>
-                    <select class="form-control" name="phong" onchange="submitFilterForm()">
-                        <option value="">Tất cả phòng</option>
-                        <?php foreach($dsPhong as $p): ?>
-                            <option value="<?= htmlspecialchars($p['phong']) ?>" <?= $phong_loc===$p['phong']?'selected':'' ?>>
-                                <?= htmlspecialchars($p['phong']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+<div class="form-col">
+    <label class="form-label">Phòng thi</label>
+    <select class="form-control" name="phong" onchange="submitFilterForm()">
+        <option value="">Tất cả phòng</option>
+        <?php foreach($dsPhong as $p): ?>
+            <option value="<?= htmlspecialchars($p['phong']) ?>" <?= $phong_loc===$p['phong']?'selected':'' ?>>
+                <?= htmlspecialchars($p['phong']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
 
                 <div class="form-col" style="display:flex;align-items:flex-end;gap:10px;">
                     <button type="submit" class="btn btn-primary">🔍 Lọc</button>
@@ -69,22 +70,22 @@ $avatarText = 'HS';
         <div class="dashboard-card">
             <div class="card-icon">📝</div>
             <div class="card-title">Tổng số môn thi</div>
-            <div class="card-value"><?= count($dsMon) ?></div>
+<div class="card-value"><?= $tongSoMonThi ?? 0 ?></div>
         </div>
         <div class="dashboard-card">
             <div class="card-icon">🏫</div>
             <div class="card-title">Số phòng thi</div>
-            <div class="card-value"><?= count($dsPhong) ?></div>
+<div class="card-value"><?= $soPhongThi ?? 0 ?></div>
         </div>
         <div class="dashboard-card">
             <div class="card-icon">📅</div>
             <div class="card-title">Ngày thi</div>
-            <div class="card-value"><?= $soNgayThi ?></div>
+<div class="card-value"><?= $soNgayThi ?? 0 ?></div>
         </div>
         <div class="dashboard-card">
             <div class="card-icon">⏰</div>
             <div class="card-title">Tiết thi hôm nay</div>
-            <div class="card-value"><?= $soTietHomNay ?></div>
+<div class="card-value"><?= $soTietHomNay ?? 0 ?></div>
         </div>
     </div>
 
