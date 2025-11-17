@@ -48,6 +48,7 @@ switch ($controller) {
         $ctrl = new DepartmentController($pdo);
         break;
 
+
     //tai
     case 'notification':  
         require_once "controllers/NotificationController.php";
