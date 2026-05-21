@@ -2,9 +2,7 @@
     <a href="index.php?controller=department&action=index">
     <div class="menu-title">SỞ GIÁO DỤC</div>
 </a>
-    <a href="index.php?controller=quota&action=index" class="menu-item active">📊 Nhập chỉ tiêu</a>
-    <a href="index.php?controller=examScore&action=index" class="menu-item active ">🏠 Nhập điểm tuyển sinh</a>
-    <a href="index.php?controller=quota&action=index" class="menu-item">🚪 Xếp danh sách thi tuyển sinh</a>
+    <a href="index.php?controller=quota&action=index" class="menu-item">📊 Nhập chỉ tiêu</a>
 </div>
 
 <style>
@@ -30,8 +28,5 @@
 .menu-item:hover {
     background: #3c5a78;
 }
-.menu-item.active {
-    background: #3498db;
-    border-left: 4px solid #2980b9;
-}
+
 </style>

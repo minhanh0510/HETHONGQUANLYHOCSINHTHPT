@@ -98,7 +98,7 @@
             <div class="form-col" style="flex:2;">
               <label class="form-label">Địa chỉ</label>
               <input type="text" name="diaChi" class="form-control"
-                     placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+                     placeholder="Số nhà, đường, phường/xã, tỉnh/thành"
                      value="<?= htmlspecialchars($student['diaChi'] ?? '') ?>">
             </div>
           </div>

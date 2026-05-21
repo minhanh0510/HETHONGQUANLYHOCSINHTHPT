@@ -1,12 +1,10 @@
 
 <div class="sidebar">
     <div class="menu-title">HIỆU TRƯỞNG</div>
-</a>
-    <a href="index.php?controller=scoreEdit&action=index" class="menu-item active">📝 Sửa điểm</a>
-    <a href="index.php?controller=scoreEdit&action=index" class="menu-item">🏠 Phân công giám thị</a>
-    <a href="index.php?controller=scoreEdit&action=index" class="menu-item">🚪 Phân công giáo viên</a>
-    <a href="index.php?controller=scoreEdit&action=index" class="menu-item">🚪 Quản lý thống kê</a>
-
+    <a href="index.php?controller=scoreEdit&action=index" class="menu-item">📝 Sửa điểm</a>
+    <a href="index.php?controller=supervisorAssignment&action=index" class="menu-item">🏠 Phân công giám thị</a>
+    <a href="index.php?controller=teacherAssignment&action=index" class="menu-item">👨‍🏫 Phân công giáo viên</a>
+    <a href="index.php?controller=statistics&action=index" class="menu-item">📊 Quản lý thống kê</a>
 </div>
 
 <style>

@@ -11,9 +11,7 @@
   <div class="card" style="margin-bottom:15px;">
     <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
       <strong>Thanh công cụ phân công</strong>
-      <span style="font-size:12px;color:#888;">
-        Chọn khối &amp; chế độ làm việc
-      </span>
+
     </div>
     <div class="card-body">
       <form method="GET" action="index.php" class="filter-section" style="margin:0;">
@@ -58,9 +56,7 @@
   <div class="card" style="margin-bottom:20px;">
     <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
       <strong><?= ($mode === 'edit') ? 'Điều chỉnh phân công' : 'Phân công mới' ?></strong>
-      <span style="font-size:12px;color:#888;">
-        Bước 1: chọn học sinh &amp; khối · Bước 2: chọn lớp và lưu
-      </span>
+
     </div>
     <div class="card-body">
       <form method="POST" action="index.php?controller=assignment&action=save" id="assignForm">
@@ -137,10 +133,7 @@
           </div>
         </div>
 
-        <p style="margin-top:10px;font-size:13px;color:#666;">
-          • Hệ thống kiểm tra sĩ số lớp dựa trên bảng <strong>HOCSINH</strong> 
-          và giới hạn <strong>siSo</strong> trong bảng <strong>LOP</strong>.
-        </p>
+
       </form>
     </div>
   </div>

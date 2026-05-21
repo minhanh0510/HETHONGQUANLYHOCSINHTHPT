@@ -107,28 +107,22 @@ $avatarText = 'HS';
                         <th>Môn thi</th>
                         <th>Ngày thi</th>
                         <th>Thứ</th>
+                        <th>Buổi</th>
                         <th>Giờ thi</th>
                         <th>Phòng thi</th>
-                        <th>Số báo danh</th>
                         <th>Trạng thái</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php foreach($rows as $pt):
-                    // Sửa tên cột để phù hợp với query mới
-                    $ngay_thi = $pt['ngayThi'] ?? '';
+                    // Lấy ngày thi từ database
+                    $ngay_thi = $pt['ngayThi'] ?? date('Y-m-d');
                     
-                    // Xử lý giờ thi từ caThi (định dạng "07:00-09:00")
-                    $caThi = $pt['caThi'] ?? '';
-                    if (strpos($caThi, '-') !== false) {
-                        $caParts = explode('-', $caThi);
-                        $gio_bd = trim($caParts[0]);
-                        $gio_kt = trim($caParts[1]);
-                    } else {
-                        $gio_bd = '07:00';
-                        $gio_kt = '09:00';
-                    }
+                    // Lấy giờ bắt đầu và kết thúc trực tiếp từ database
+                    $gio_bd = isset($pt['gioBatDau']) ? date('H:i', strtotime($pt['gioBatDau'])) : '07:30';
+                    $gio_kt = isset($pt['gioKetThuc']) ? date('H:i', strtotime($pt['gioKetThuc'])) : '09:30';
+                    $buoiThi = $pt['buoiThi'] ?? 'Sáng';
 
                     $thu_index = date('w', strtotime($ngay_thi));
                     $thu_text = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'][$thu_index];
@@ -148,6 +142,7 @@ $avatarText = 'HS';
                         <td><strong><?= htmlspecialchars($pt['mon_thi'] ?? '') ?></strong></td>
                         <td><span class="date-badge"><?= date('d/m/Y', strtotime($ngay_thi)) ?></span></td>
                         <td><?= $thu_text ?></td>
+                        <td><span class="buoi-badge buoi-<?= strtolower($buoiThi) ?>"><?= $buoiThi ?></span></td>
                         <td>
                             <div class="time-slot">
                                 <span class="time-badge"><?= $gio_bd ?></span>
@@ -155,12 +150,11 @@ $avatarText = 'HS';
                                 <span class="time-badge"><?= $gio_kt ?></span>
                             </div>
                         </td>
-                        <td><span class="room-badge"><?= htmlspecialchars($pt['phong'] ?? '') ?></span></td>
-                        <td><strong class="student-id"><?= htmlspecialchars($pt['soBaoDanh'] ?? '') ?></strong></td>
+                        <td><span class="room-badge"><?= htmlspecialchars($pt['phong'] ?? 'Chưa xếp') ?></span></td>
                         <td><span class="status-badge status-<?= $color ?>"><?= $icon.' '.$state ?></span></td>
                         <td>
                             <button class="btn btn-sm btn-primary"
-                                    onclick="viewExamDetails('<?= htmlspecialchars($pt['mon_thi'] ?? '', ENT_QUOTES) ?>','<?= htmlspecialchars($pt['ngayThi'] ?? '', ENT_QUOTES) ?>','<?= $gio_bd ?>','<?= htmlspecialchars($pt['phong'] ?? '', ENT_QUOTES) ?>','<?= htmlspecialchars($pt['soBaoDanh'] ?? '', ENT_QUOTES) ?>','<?= htmlspecialchars($pt['hoVaTen'] ?? '', ENT_QUOTES) ?>')">
+                                    onclick="viewExamDetails('<?= htmlspecialchars($pt['mon_thi'] ?? '', ENT_QUOTES) ?>','<?= htmlspecialchars($pt['ngayThi'] ?? '', ENT_QUOTES) ?>','<?= $gio_bd ?>-<?= $gio_kt ?>','<?= htmlspecialchars($pt['phong'] ?? '', ENT_QUOTES) ?>','<?= htmlspecialchars($pt['tenLop'] ?? '', ENT_QUOTES) ?>','<?= htmlspecialchars($pt['hoVaTen'] ?? '', ENT_QUOTES) ?>','<?= htmlspecialchars($buoiThi, ENT_QUOTES) ?>')">
                                     👁️ Chi tiết
                             </button>
                         </td>
@@ -200,21 +194,28 @@ $avatarText = 'HS';
 function submitFilterForm(){ document.getElementById('filterForm').submit(); }
 function resetFilter(){ window.location.href='index.php?controller=student&action=examRoom'; }
 
-function viewExamDetails(monThi, ngayThi, gioBatDau, phong, soBaoDanh, hoTen){
+function viewExamDetails(monThi, ngayThi, gioThi, phong, lop, hoTen, buoiThi){
     const dateObj=new Date(ngayThi);
     const ngayVN=dateObj.toLocaleDateString('vi-VN');
     const thuVN=dateObj.toLocaleDateString('vi-VN',{weekday:'long'});
     const content=`
         <div class="exam-detail">
-        <div><strong>Môn thi:</strong> ${monThi}</div>
-        <div><strong>Ngày thi:</strong> ${ngayVN} (${thuVN})</div>
-        <div><strong>Giờ thi:</strong> ${gioBatDau}</div>
-        <div><strong>Phòng thi:</strong> ${phong}</div>
-        <div><strong>Số báo danh:</strong> ${soBaoDanh}</div>
-        <div><strong>Họ tên:</strong> ${hoTen}</div>
+        <div><strong>📚 Môn thi:</strong> ${monThi}</div>
+        <div><strong>🏫 Lớp:</strong> ${lop}</div>
+        <div><strong>📅 Ngày thi:</strong> ${ngayVN} (${thuVN})</div>
+        <div><strong>🌅 Buổi thi:</strong> ${buoiThi}</div>
+        <div><strong>⏰ Giờ thi:</strong> ${gioThi}</div>
+        <div><strong>🚪 Phòng thi:</strong> ${phong || 'Chưa xếp phòng'}</div>
+        <div><strong>👤 Họ tên:</strong> ${hoTen}</div>
         <hr/>
         <div class="alert alert-warning">
-            <ul><li>Có mặt trước 15 phút</li><li>Mang thẻ học sinh</li><li>Không mang tài liệu</li></ul>
+            <strong>📌 Lưu ý quan trọng:</strong>
+            <ul>
+                <li>Có mặt trước giờ thi 15 phút</li>
+                <li>Mang theo thẻ học sinh/CMND</li>
+                <li>Không mang tài liệu, thiết bị điện tử vào phòng thi</li>
+                <li>Mang đầy đủ dụng cụ: bút, thước, máy tính (nếu được phép)</li>
+            </ul>
         </div>
         </div>`;
     document.getElementById('examDetailContent').innerHTML=content;

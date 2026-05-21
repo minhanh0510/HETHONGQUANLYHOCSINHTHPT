@@ -13,12 +13,16 @@ class FeedbackEvaluationController {
     // 1. DANH SÁCH LỚP
     public function showClasses() {
         session_start();
+
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'teacher') {
             header("Location: index.php?controller=auth&action=login");
             exit;
         }
 
-        $classes = $this->model->getClasses();
+        // ✅ ĐÚNG KEY TRONG SESSION
+        $tenDangNhap = $_SESSION['user']['username'];
+
+        $classes = $this->model->getClasses($tenDangNhap);
 
         include __DIR__ . '/../views/teacher/class_list.php';
     }

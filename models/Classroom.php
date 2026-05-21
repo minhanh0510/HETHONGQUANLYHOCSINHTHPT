@@ -36,7 +36,7 @@ class Classroom {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Kiểm tra giáo viên có phải GVCN của lớp không
+    // Kiểm tra giáo viên có phải GVCN của lớp không - GIỮ LẠI PHIÊN BẢN CŨ
     public function isHomeRoomTeacher($maGV, $maLop) {
         $sql = "SELECT COUNT(*) FROM pcgvcn 
                 WHERE maGV = :maGV AND maLop = :maLop";
@@ -48,57 +48,73 @@ class Classroom {
 
     // Lấy thông tin lớp
     public function getClassInfo($maLop) {
-        $sql = "SELECT l.*, k.tenKhoi, b.tenBan,
-                       nd.hoVaTen as tenGVCN
-                FROM lop l
-                LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
-                LEFT JOIN bankp b ON l.maBan = b.maBan
-                LEFT JOIN pcgvcn pc ON l.maLop = pc.maLop
-                LEFT JOIN giaovien gv ON pc.maGV = gv.maGV
-                LEFT JOIN nguoidung nd ON gv.maNguoiDung = nd.maNguoiDung
-                WHERE l.maLop = :maLop
-                LIMIT 1";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':maLop' => $maLop]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+    $sql = "SELECT l.maLop, l.tenLop, l.maKhoi, l.maBan,
+                   k.tenKhoi, b.tenBan,
+                   nd.hoVaTen as tenGVCN,
+                   COUNT(DISTINCT pc.maHS) as siSo
+            FROM lop l
+            LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+            LEFT JOIN bankp b ON l.maBan = b.maBan
+            LEFT JOIN pcgvcn gvcn ON l.maLop = gvcn.maLop
+            LEFT JOIN giaovien gv ON gvcn.maGV = gv.maGV
+            LEFT JOIN nguoidung nd ON gv.maNguoiDung = nd.maNguoiDung
+            LEFT JOIN phancong pc ON l.maLop = pc.maLop AND pc.trangThai = 'DangHoc'
+            WHERE l.maLop = :maLop
+            GROUP BY l.maLop, l.tenLop, l.maKhoi, l.maBan, k.tenKhoi, b.tenBan, nd.hoVaTen
+            LIMIT 1";
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([':maLop' => $maLop]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
     // Lấy danh sách học sinh trong lớp
     public function getStudentsByClass($maLop) {
-        $sql = "SELECT hs.maHS, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh, nd.diaChi, nd.soDienThoai,
-                       hs.dangThaiHocTap, hs.soBaoDanh,
-                       pc.namHoc, pc.trangThai, l.tenLop
-                FROM phancong pc
-                JOIN hocsinh hs ON pc.maHS = hs.maHS
-                JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
-                JOIN lop l ON pc.maLop = l.maLop
-                WHERE pc.maLop = :maLop AND pc.trangThai = 'DangHoc'
-                ORDER BY nd.hoVaTen";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':maLop' => $maLop]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $sql = "SELECT DISTINCT
+                hs.maHS,
+                nd.hoVaTen,
+                nd.gioiTinh,
+                nd.ngaySinh,
+                nd.diaChi,
+                nd.soDienThoai,
+                hs.dangThaiHocTap,
+                hs.soBaoDanh,
+                pc.namHoc,
+                pc.trangThai,
+                l.tenLop
+            FROM hocsinh hs
+            JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
+            JOIN phancong pc ON hs.maHS = pc.maHS
+            JOIN lop l ON pc.maLop = l.maLop
+            WHERE pc.maLop = :maLop 
+            AND pc.trangThai = 'DangHoc'
+            AND hs.maLop = :maLop
+            ORDER BY nd.hoVaTen";
 
-    // Lấy thông tin chi tiết học sinh
-    public function getStudentDetail($maHS) {
-        $sql = "SELECT hs.*, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh,
-                       nd.diaChi, nd.soDienThoai, nd.email,
-                       l.tenLop, k.tenKhoi, b.tenBan
-                FROM hocsinh hs
-                JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
-                LEFT JOIN phancong pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
-                LEFT JOIN lop l ON pc.maLop = l.maLop
-                LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
-                LEFT JOIN bankp b ON l.maBan = b.maBan
-                WHERE hs.maHS = :maHS
-                LIMIT 1";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':maHS' => $maHS]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([':maLop' => $maLop]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+     // Lấy thông tin chi tiết học sinh (chỉ lớp 10A1)
+public function getStudentDetail($maHS) {
+    $sql = "SELECT hs.*, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh,
+                   nd.diaChi, nd.soDienThoai, nd.email,
+                   l.tenLop, k.tenKhoi, b.tenBan
+            FROM hocsinh hs
+            JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
+            LEFT JOIN lop l ON hs.maLop = l.maLop
+            LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+            LEFT JOIN bankp b ON l.maBan = b.maBan
+            WHERE hs.maHS = :maHS
+            AND hs.maLop = 'L10A1'  -- Chỉ lấy học sinh lớp 10A1
+            LIMIT 1";
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([':maHS' => $maHS]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
     // Lấy thông tin phụ huynh
     public function getParentInfo($maHS) {
@@ -181,20 +197,20 @@ class Classroom {
 
     // Lấy lịch sử điểm danh (nghỉ học)
     public function getAttendanceHistory($maHS) {
-        $sql = "SELECT maDon, lyDo, ngayNghi, trangThai, ngayGui, ngayXuLy
+        $sql = "SELECT maDon, lyDo, ngayBatDau, ngayKetThuc, trangThai, ngayGui, ngayXuLy
                 FROM donnghihoc
                 WHERE maHS = :maHS
-                ORDER BY ngayNghi DESC";
+                ORDER BY ngayBatDau DESC"; // Sửa từ ngayNghi sang ngayBatDau
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':maHS' => $maHS]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Thống kê điểm danh
+    // Thống kê điểm danh - SỬA ĐỂ PHÙ HỢP VỚI DB
     public function getAttendanceStats($maHS) {
         $sql = "SELECT 
-                    COUNT(*) as tongSoNgayNghi,
+                    COUNT(*) as tongSoDon,
                     SUM(CASE WHEN trangThai = 'DaDuyet' THEN 1 ELSE 0 END) as nghiCoPhep,
                     SUM(CASE WHEN trangThai = 'TuChoi' THEN 1 ELSE 0 END) as nghiKhongPhep,
                     SUM(CASE WHEN trangThai = 'ChoXuLy' THEN 1 ELSE 0 END) as choXuLy
@@ -207,7 +223,7 @@ class Classroom {
         
         // Đảm bảo không có giá trị null
         return [
-            'tongSoNgayNghi' => $result['tongSoNgayNghi'] ?? 0,
+            'tongSoDon' => $result['tongSoDon'] ?? 0,
             'nghiCoPhep' => $result['nghiCoPhep'] ?? 0,
             'nghiKhongPhep' => $result['nghiKhongPhep'] ?? 0,
             'choXuLy' => $result['choXuLy'] ?? 0
@@ -369,36 +385,41 @@ class Classroom {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // Tìm kiếm học sinh trong 1 lớp cụ thể
-    public function searchStudentsInClass($maLop, $gioiTinh = '', $keyword = '') {
-        $sql = "SELECT hs.maHS, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh, nd.diaChi, nd.soDienThoai,
-                       hs.soBaoDanh, hs.dangThaiHocTap,
-                       l.tenLop, k.tenKhoi
-                FROM hocsinh hs
-                JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
-                JOIN phancong pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
-                JOIN lop l ON pc.maLop = l.maLop
-                LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
-                WHERE pc.maLop = :maLop";
-        
-        $params = [':maLop' => $maLop];
-        
-        if (!empty($gioiTinh)) {
-            $sql .= " AND nd.gioiTinh = :gioiTinh";
-            $params[':gioiTinh'] = $gioiTinh;
-        }
-        
-        if (!empty($keyword)) {
-            $sql .= " AND (nd.hoVaTen LIKE :keyword OR hs.maHS LIKE :keyword OR hs.soBaoDanh LIKE :keyword)";
-            $params[':keyword'] = '%' . $keyword . '%';
-        }
-        
-        $sql .= " ORDER BY nd.hoVaTen";
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+
+    // Tìm kiếm học sinh trong 1 lớp cụ thể - tối ưu hơn
+public function searchStudentsInClass($maLop, $gioiTinh = '', $keyword = '') {
+    $sql = "SELECT DISTINCT hs.maHS, nd.hoVaTen, nd.gioiTinh, nd.ngaySinh, nd.diaChi, 
+                   nd.soDienThoai, hs.soBaoDanh, hs.dangThaiHocTap,
+                   l.tenLop, k.tenKhoi
+            FROM hocsinh hs
+            JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
+            JOIN phancong pc ON hs.maHS = pc.maHS 
+                AND pc.trangThai = 'DangHoc'
+                AND pc.maLop = :maLop  -- Thêm điều kiện lớp ở đây
+            JOIN lop l ON l.maLop = :maLop  -- Trực tiếp lấy lớp
+            LEFT JOIN khoi k ON l.maKhoi = k.maKhoi
+            WHERE hs.maLop = :maLop  -- Thêm điều kiện lớp từ bảng học sinh
+            AND hs.dangThaiHocTap = 'Đang học'";
+    
+    $params = [':maLop' => $maLop];
+    
+    if (!empty($gioiTinh)) {
+        $sql .= " AND nd.gioiTinh = :gioiTinh";
+        $params[':gioiTinh'] = $gioiTinh;
     }
+    
+    if (!empty($keyword)) {
+        $sql .= " AND (nd.hoVaTen LIKE :keyword OR hs.maHS LIKE :keyword OR hs.soBaoDanh LIKE :keyword)";
+        $params[':keyword'] = '%' . $keyword . '%';
+    }
+    
+    $sql .= " ORDER BY nd.hoVaTen";
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     // ========== METHODS CHO LỊCH DẠY ==========
 
@@ -484,121 +505,175 @@ class Classroom {
     }
 
     // ========== METHOD MỚI: ĐẾM ĐƠN XIN NGHỈ CHỜ DUYỆT ==========
-    
-    /**
-     * Đếm số đơn xin nghỉ chờ duyệt của các lớp mà giáo viên chủ nhiệm
-     * @param string $maGV - Mã giáo viên
-     * @return int - Số lượng đơn chờ duyệt
-     */
-    public function countPendingLeaveRequests($maGV) {
-        try {
-            $sql = "SELECT COUNT(*) as total
-                    FROM donnghihoc d
-                    INNER JOIN hocsinh hs ON d.maHS = hs.maHS
-                    INNER JOIN phancong pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
-                    INNER JOIN lop l ON pc.maLop = l.maLop
-                    INNER JOIN pcgvcn gvcn ON l.maLop = gvcn.maLop
-                    WHERE gvcn.maGV = :maGV 
-                    AND d.trangThai = 'ChoXuLy'";
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(':maGV', $maGV);
-            $stmt->execute();
-            
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result['total'] ?? 0;
-            
-        } catch (PDOException $e) {
-            error_log("Error counting pending leave requests: " . $e->getMessage());
-            return 0;
-        }
-    }
 
-    // ========== METHOD MỚI: LẤY ĐƠN XIN NGHỈ CỦA LỚP - THÊM VÀO ==========
-    
-    /**
-     * Lấy danh sách đơn xin nghỉ của một lớp (JOIN để lấy tên học sinh)
-     * @param string $maLop - Mã lớp
-     * @return array - Danh sách đơn xin nghỉ
-     */
-    public function getLeaveRequestsByClass($maLop) {
-        try {
-            $sql = "SELECT d.maDon, d.maHS, d.lyDo, d.ngayNghi, d.trangThai, d.ngayGui, d.ngayXuLy,
-                           nd.hoVaTen, hs.soBaoDanh
-                    FROM donnghihoc d
-                    INNER JOIN hocsinh hs ON d.maHS = hs.maHS
-                    INNER JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
-                    INNER JOIN phancong pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
-                    WHERE pc.maLop = :maLop
-                    ORDER BY 
-                        CASE d.trangThai 
-                            WHEN 'ChoXuLy' THEN 1 
-                            WHEN 'DaDuyet' THEN 2 
-                            WHEN 'TuChoi' THEN 3 
-                        END,
-                        d.ngayNghi DESC";
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([':maLop' => $maLop]);
-            
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            error_log("getLeaveRequestsByClass - Found " . count($result) . " requests");
-            
-            return $result;
-            
-        } catch (PDOException $e) {
-            error_log("Error getting leave requests by class: " . $e->getMessage());
-            return [];
-        }
+/**
+ * Đếm số đơn xin nghỉ chờ duyệt của các lớp mà giáo viên chủ nhiệm
+ * @param string $maGV - Mã giáo viên
+ * @return int - Số lượng đơn chờ duyệt
+ */
+public function countPendingLeaveRequests($maGV) {
+    try {
+        $sql = "SELECT COUNT(DISTINCT d.maDon) as total
+                FROM donnghihoc d
+                INNER JOIN hocsinh hs ON d.maHS = hs.maHS
+                INNER JOIN phancong pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
+                INNER JOIN lop l ON pc.maLop = l.maLop
+                INNER JOIN pcgvcn gvcn ON l.maLop = gvcn.maLop
+                WHERE gvcn.maGV = :maGV 
+                AND d.trangThai = 'ChoXuLy'";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':maGV', $maGV);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+        
+    } catch (PDOException $e) {
+        error_log("Error counting pending leave requests: " . $e->getMessage());
+        return 0;
     }
+}
 
-    // ========== METHOD MỚI: LẤY ĐIỂM DANH THEO TUẦN - THÊM VÀO ==========
-    
-    /**
-     * Lấy điểm danh của cả tuần
-     * @param string $maLop - Mã lớp
-     * @param string $monday - Thứ 2 đầu tuần (Y-m-d)
-     * @return array - Mảng 2 chiều [maHS][date] => status
-     */
-    public function getWeekAttendance($maLop, $monday) {
-        try {
-            error_log("=== GET WEEK ATTENDANCE DEBUG ===");
-            error_log("maLop: $maLop, monday: $monday");
+// ========== METHOD MỚI: LẤY ĐƠN XIN NGHỈ CỦA LỚP - THÊM VÀO ==========
+
+/**
+ * Lấy danh sách đơn xin nghỉ của một lớp (JOIN để lấy tên học sinh)
+ * @param string $maLop - Mã lớp
+ * @return array - Danh sách đơn xin nghỉ
+ */
+public function getLeaveRequestsByClass($maLop) {
+    try {
+        $sql = "SELECT d.maDon, d.maHS, d.lyDo, d.ngayBatDau, d.ngayKetThuc, d.trangThai, d.ngayGui, d.ngayXuLy,
+                       nd.hoVaTen, hs.soBaoDanh,
+                       DATEDIFF(d.ngayKetThuc, d.ngayBatDau) + 1 as soNgayNghi
+                FROM donnghihoc d
+                INNER JOIN hocsinh hs ON d.maHS = hs.maHS
+                INNER JOIN nguoidung nd ON hs.maNguoiDung = nd.maNguoiDung
+                INNER JOIN phancong pc ON hs.maHS = pc.maHS AND pc.trangThai = 'DangHoc'
+                WHERE pc.maLop = :maLop
+                ORDER BY 
+                    CASE d.trangThai 
+                        WHEN 'ChoXuLy' THEN 1 
+                        WHEN 'DaDuyet' THEN 2 
+                        WHEN 'TuChoi' THEN 3 
+                    END,
+                    d.ngayBatDau DESC";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':maLop' => $maLop]);
+        
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("getLeaveRequestsByClass - Found " . count($result) . " requests for class $maLop");
+        
+        return $result;
+        
+    } catch (PDOException $e) {
+        error_log("Error getting leave requests by class: " . $e->getMessage());
+        return [];
+    }
+}
+
+// ========== METHOD MỚI: LẤY ĐIỂM DANH THEO TUẦN - THÊM VÀO ==========
+
+/**
+ * Lấy điểm danh của cả tuần
+ * @param string $maLop - Mã lớp
+ * @param string $monday - Thứ 2 đầu tuần (Y-m-d)
+ * @return array - Mảng 2 chiều [maHS][date] => status
+ */
+public function getWeekAttendance($maLop, $monday) {
+    try {
+        error_log("=== GET WEEK ATTENDANCE DEBUG ===");
+        error_log("maLop: $maLop, monday: $monday");
+        
+        // Tính ngày cuối tuần (thứ 7)
+        $sunday = date('Y-m-d', strtotime($monday . ' +6 days'));
+        
+        $sql = "SELECT maHS, ngayDiemDanh, trangThai
+                FROM diemdanh
+                WHERE maLop = :maLop 
+                AND ngayDiemDanh >= :monday
+                AND ngayDiemDanh <= :sunday
+                ORDER BY ngayDiemDanh";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':maLop' => $maLop, 
+            ':monday' => $monday,
+            ':sunday' => $sunday
+        ]);
+        
+        $result = [];
+        $count = 0;
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $maHS = $row['maHS'];
+            $ngay = $row['ngayDiemDanh'];
             
-            $sql = "SELECT maHS, ngayDiemDanh, trangThai
-                    FROM diemdanh
-                    WHERE maLop = :maLop 
-                    AND ngayDiemDanh >= :monday
-                    AND ngayDiemDanh < DATE_ADD(:monday, INTERVAL 6 DAY)
-                    ORDER BY ngayDiemDanh";
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute([':maLop' => $maLop, ':monday' => $monday]);
-            
-            $result = [];
-            $count = 0;
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $maHS = $row['maHS'];
-                $ngay = $row['ngayDiemDanh'];
-                $status = ($row['trangThai'] === 'CoMat') ? 'present' : 'absent';
-                
-                if (!isset($result[$maHS])) {
-                    $result[$maHS] = [];
-                }
-                $result[$maHS][$ngay] = $status;
-                $count++;
+            // Chuyển đổi trạng thái từ DB sang frontend
+            $status = '';
+            switch ($row['trangThai']) {
+                case 'CoMat':
+                    $status = 'present';
+                    break;
+                case 'Vang':
+                case 'CoPhep':
+                    $status = 'absent';
+                    break;
+                case 'DiTre':
+                    $status = 'late';
+                    break;
+                default:
+                    $status = 'unknown';
             }
             
-            error_log("Found $count attendance records for the week");
-            error_log("Week attendance data: " . print_r($result, true));
-            
-            return $result;
-            
-        } catch (PDOException $e) {
-            error_log("Error getting week attendance: " . $e->getMessage());
-            return [];
+            if (!isset($result[$maHS])) {
+                $result[$maHS] = [];
+            }
+            $result[$maHS][$ngay] = $status;
+            $count++;
         }
+        
+        error_log("Found $count attendance records for the week");
+        
+        return $result;
+        
+    } catch (PDOException $e) {
+        error_log("Error getting week attendance: " . $e->getMessage());
+        return [];
     }
+}
+
+// ========== METHOD BỔ SUNG: CẬP NHẬT TRẠNG THÁI ĐƠN NGHỈ HỌC ==========
+
+/**
+ * Cập nhật trạng thái đơn xin nghỉ học
+ * @param int $maDon - Mã đơn
+ * @param string $trangThai - Trạng thái mới (DaDuyet/TuChoi)
+ * @param string $maGV - Mã giáo viên duyệt
+ * @return bool - Thành công hay không
+ */
+public function updateLeaveRequestStatus($maDon, $trangThai, $maGV = null) {
+    try {
+        $sql = "UPDATE donnghihoc 
+                SET trangThai = :trangThai, 
+                    ngayXuLy = NOW()
+                WHERE maDon = :maDon";
+        
+        $stmt = $this->db->prepare($sql);
+        $result = $stmt->execute([
+            ':trangThai' => $trangThai,
+            ':maDon' => $maDon
+        ]);
+        
+        error_log("Updated leave request $maDon to status $trangThai - Result: " . ($result ? 'success' : 'failed'));
+        return $result;
+        
+    } catch (PDOException $e) {
+        error_log("Error updating leave request status: " . $e->getMessage());
+        return false;
+    }
+}
 
     // ========== ATTENDANCE METHODS - UPDATED ==========
     

@@ -23,16 +23,22 @@ switch ($vaiTro) {
 
 <div class="main-content">
     <h2>📢 Danh sách thông báo</h2>
-    <p class="info-text">Danh sách thông báo từ Ban Giám hiệu và giáo viên (mới nhất đến cũ nhất)</p>
+    <p class="info-text">Danh sách thông báo từ mới nhất đến cũ nhất</p>
 
     <?php if (!empty($notifications)): ?>
         <?php foreach ($notifications as $tb): ?>
             <?php
               $isNew = false;
-              if (!empty($tb['ngayGui'])) {
-                  $isNew = (time() - strtotime($tb['ngayGui']) <= 3*24*60*60); // MỚI: 3 ngày
-              }
+                if (!empty($tb['ngayGui'])) {
+                    $now = new DateTime('now', new DateTimeZone('Asia/Ho_Chi_Minh'));
+                    $ngayGui = new DateTime($tb['ngayGui'], new DateTimeZone('Asia/Ho_Chi_Minh'));
+
+                    $diff = $now->getTimestamp() - $ngayGui->getTimestamp();
+
+                    $isNew = ($diff <= 3*24*60*60); // TEST 5 giây
+                }
             ?>
+
             <a href="index.php?controller=notification&action=detail&id=<?= $tb['maThongBao'] ?>" style="text-decoration:none;">
                 <div class="notification-card <?= $isNew ? 'new' : '' ?>">
                     <h3>

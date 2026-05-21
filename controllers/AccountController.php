@@ -45,6 +45,13 @@ class AccountController {
                 header("Location: index.php?controller=account&action=index");
                 exit;
             }
+            // 2️⃣ Kiểm tra ngày sinh không lớn hơn hôm nay
+            $today = date('Y-m-d');
+            if ($ngaySinh > $today) {
+                $_SESSION['error'] = "❌ Ngày sinh không hợp lệ (không được lớn hơn ngày hiện tại)";
+                header("Location: index.php?controller=account&action=index");
+                exit;
+            }
 
             $result = $this->model->createAccount(
                 $username,

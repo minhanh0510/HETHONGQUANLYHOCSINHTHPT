@@ -19,7 +19,6 @@
         <?php endif; ?>
         
         <div class="action-buttons" style="margin-top: 20px;">
-            <a href="index.php?controller=admission&action=status" class="btn btn-primary">📋 Xem trạng thái hồ sơ</a>
             <a href="index.php?controller=parent&action=dashboard" class="btn btn-outline">🏠 Về trang chủ</a>
         </div>
     </div>

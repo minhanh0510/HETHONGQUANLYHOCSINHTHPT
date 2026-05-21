@@ -68,7 +68,7 @@ class RoomAssignmentController {
             error_log("Current Capacity: $currentCapacity, Max Capacity: $maxCapacity"); // Log giá trị
 
             if ($currentCapacity >= $maxCapacity) {
-                $_SESSION['error'] = "❌ Phòng thi đã đủ sĩ số. Không thể thêm học sinh.";
+                $_SESSION['error'] = "❌ Phòng thi đã đủ sĩ số. vui lòng chọn phòng khác.";
                 header("Location: index.php?controller=roomAssignment&action=assign&roomId=$roomId&redirect=index");
                 exit;
             }

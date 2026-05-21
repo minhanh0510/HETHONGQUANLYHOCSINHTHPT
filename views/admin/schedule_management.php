@@ -2,179 +2,533 @@
 <?php include "views/layout/sidebar_admin.php"; ?>
 
 <style>
-/* STYLE CHO QUẢN LÝ LỊCH HỌC */
+/* ===== STYLE QUẢN LÝ THỜI KHÓA BIỂU ===== */
+.schedule-page {
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Filter Section */
 .filter-section {
-    background-color: #f8f9fa;
-    padding: 15px;
-    border-radius: 6px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    border-radius: 12px;
     margin-bottom: 20px;
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
     align-items: flex-end;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .filter-group {
     flex: 1;
-    min-width: 200px;
+    min-width: 150px;
 }
 
+.filter-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: white;
+    font-size: 13px;
+}
+
+.filter-group select,
+.filter-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    color: #2c3e50;
+}
+
+.mode-toggle {
+    display: flex;
+    background: rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.mode-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.mode-btn.active {
+    background: white;
+    color: #667eea;
+}
+
+/* Status Bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-badge.template {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.status-badge.week {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.status-badge.locked {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-badge.custom {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.status-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+/* Main Container */
 .schedule-container {
     display: flex;
     gap: 20px;
     margin-top: 20px;
 }
 
+/* Subjects Panel */
 .subjects-panel {
-    width: 300px;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-    padding: 15px;
+    width: 280px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.subjects-panel h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .subject-item {
-    background-color: white;
+    background: #f8f9fa;
     padding: 12px 15px;
     margin-bottom: 10px;
-    border-radius: 4px;
-    cursor: move;
-    border: 1px solid #e1e5eb;
+    border-radius: 8px;
+    cursor: grab;
     border-left: 4px solid #3498db;
     transition: all 0.2s;
-    font-weight: 600;
+    position: relative;
 }
 
 .subject-item:hover {
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    background: #e3f2fd;
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
 }
 
-.subject-item.text-muted {
-    opacity: 0.6;
+.subject-item.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.subject-item.disabled {
+    opacity: 0.5;
     cursor: not-allowed;
+    border-left-color: #bdc3c7;
 }
 
-.subject-item small {
-    font-weight: 400;
-    color: #666;
-    display: block;
-    margin-top: 4px;
+.subject-item .subject-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
 }
 
+.subject-item .subject-info {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.subject-item .subject-hours {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #3498db;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.subject-item.full .subject-hours {
+    background: #27ae60;
+}
+
+.subject-item.disabled .subject-hours {
+    background: #bdc3c7;
+}
+
+/* Schedule Panel */
 .schedule-panel {
     flex: 1;
-    background-color: white;
-    border-radius: 8px;
+    background: white;
+    border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
+.schedule-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f1f3f4;
+}
+
+.schedule-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.schedule-subtitle {
+    font-size: 13px;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+/* Schedule Grid */
 .schedule-grid {
     display: grid;
     grid-template-columns: 80px repeat(6, 1fr);
     gap: 2px;
-    background-color: #e1e5eb;
-    border: 1px solid #e1e5eb;
-    margin-top: 15px;
+    background: #e1e5eb;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.schedule-header {
-    background-color: #3498db;
+.grid-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 12px;
+    padding: 15px 10px;
     text-align: center;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-.schedule-time {
-    background-color: #f8f9fa;
-    padding: 12px;
-    text-align: center;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-}
-
-.schedule-cell {
-    background-color: white;
-    padding: 10px;
-    min-height: 90px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    position: relative;
-    font-size: 13px;
-}
-
-.schedule-cell:hover {
-    background-color: #f0f8ff;
-}
-
-.schedule-cell.highlight {
-    background-color: #e8f4fd !important;
-    border: 2px dashed #3498db !important;
-}
-
-.schedule-cell.week-locked-cell {
-    cursor: not-allowed;
-    opacity: 0.7;
-    background-color: #f8f9fa !important;
-}
-
-/* Ô gợi ý */
-.schedule-cell.suggested-slot {
-    background: #e8f5e8 !important;
-    border: 2px dashed #28a745 !important;
-}
-
-/* Ô cảnh báo */
-.schedule-cell.conflict-slot {
-    background: #ffe6e6 !important;
-    border: 2px dashed #dc3545 !important;
-}
-
-.tkb-entry {
-    background: #3498db;
-    color: white;
-    padding: 6px 8px;
-    border-radius: 4px;
-    font-size: 12px;
     font-weight: 600;
+    font-size: 14px;
 }
 
-.tkb-entry strong {
-    display: block;
-    margin-bottom: 2px;
+.grid-time {
+    background: #f8f9fa;
+    padding: 15px 10px;
+    text-align: center;
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.tkb-entry small {
-    display: block;
-    font-size: 11px;
-    opacity: 0.9;
+.grid-time .period {
+    font-size: 16px;
+}
+
+.grid-time .time {
+    font-size: 10px;
+    color: #7f8c8d;
     margin-top: 2px;
 }
 
-.week-locked {
-    background-color: #fff3cd;
-    border: 1px solid #ffeaa7;
-    padding: 12px 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    color: #856404;
+.grid-cell {
+    background: white;
+    min-height: 100px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
     display: flex;
+    flex-direction: column;
+}
+
+.grid-cell:hover {
+    background: #f0f8ff;
+}
+
+.grid-cell.highlight {
+    background: #e3f2fd !important;
+    border: 2px dashed #2196f3 !important;
+}
+
+.grid-cell.suggested {
+    background: #e8f5e9 !important;
+    border: 2px dashed #4caf50 !important;
+}
+
+.grid-cell.suggested::after {
+    content: "✓";
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #4caf50;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.grid-cell.conflict {
+    background: #ffebee !important;
+    border: 2px dashed #f44336 !important;
+}
+
+.grid-cell.locked {
+    background: #f5f5f5 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Buổi chiều - style nhẹ nhàng */
+.grid-time.afternoon {
+    background: #f5f5f5;
+    border-top: 2px solid #e0e0e0;
+}
+
+.grid-time.afternoon .period {
+    color: #ff9800;
+}
+
+.grid-cell.afternoon {
+    background: #fafafa;
+}
+
+.grid-cell.afternoon:hover {
+    background: #f5f5f5;
+}
+
+/* Schedule Entry */
+.schedule-entry {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.schedule-entry .entry-subject {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.schedule-entry .entry-teacher {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.schedule-entry .entry-room {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-top: auto;
+}
+
+.schedule-entry .entry-delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    display: none;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    transition: all 0.2s;
 }
 
-.week-locked strong {
+.schedule-entry:hover .entry-delete {
+    display: flex;
+}
+
+.schedule-entry .entry-delete:hover {
+    background: #e74c3c;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    text-decoration: none;
 }
 
-/* Modal styles */
-.modal {
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid currentColor;
+}
+
+/* Modal */
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -187,32 +541,68 @@
     z-index: 1000;
 }
 
+.modal-overlay.active {
+    display: flex;
+}
+
 .modal-box {
-    width: 450px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    padding: 25px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modal-header {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: #2c3e50;
+    padding: 20px 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.close-btn {
-    cursor: pointer;
-    font-size: 24px;
-    color: #7f8c8d;
+.modal-title {
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.close-btn:hover {
-    color: #34495e;
+.modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.modal-body {
+    padding: 25px;
 }
 
 .form-group {
@@ -222,743 +612,743 @@
 .form-label {
     display: block;
     margin-bottom: 8px;
-    font-weight: 500;
+    font-weight: 600;
     color: #2c3e50;
 }
 
 .form-control {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 15px;
+    padding: 12px 15px;
+    border: 2px solid #e1e5eb;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s;
 }
 
-.form-actions {
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-info {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.form-info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.form-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.form-info-label {
+    color: #7f8c8d;
+}
+
+.form-info-value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.conflict-warning {
+    background: #fff3e0;
+    border: 1px solid #ffcc80;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    color: #e65100;
+}
+
+.conflict-warning ul {
+    margin: 8px 0 0 20px;
+    padding: 0;
+}
+
+.modal-footer {
+    padding: 20px 25px;
+    background: #f8f9fa;
+    border-radius: 0 0 16px 16px;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 25px;
 }
 
-.badge-warning {
-    background-color: #f39c12;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
+/* Apply Year Modal */
+.apply-year-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
 
-.text-danger {
-    color: #e74c3c !important;
+/* Responsive */
+@media (max-width: 1200px) {
+    .schedule-container {
+        flex-direction: column;
+    }
+    
+    .subjects-panel {
+        width: 100%;
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .subjects-panel h3 {
+        width: 100%;
+    }
+    
+    .subject-item {
+        flex: 1;
+        min-width: 200px;
+    }
 }
 
-.text-muted {
-    color: #7f8c8d !important;
+@media (max-width: 768px) {
+    .filter-section {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .schedule-grid {
+        font-size: 12px;
+    }
+    
+    .grid-cell {
+        min-height: 80px;
+        padding: 5px;
+    }
 }
 
-.schedule-status {
-    background-color: #e8f4fd;
-    border: 1px solid #b8daff;
-    padding: 12px 15px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    display: none;
     align-items: center;
+    justify-content: center;
+    z-index: 2000;
 }
 
-.schedule-status.info {
-    background-color: #e8f4fd;
-    border-color: #b8daff;
-}
-
-.schedule-status.warning {
-    background-color: #fff3cd;
-    border-color: #ffeaa7;
-}
-
-.template-actions {
+.loading-overlay.active {
     display: flex;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast Notification */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 3000;
+}
+
+.toast {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
     gap: 10px;
-    margin-top: 10px;
+    animation: toastSlideIn 0.3s ease;
+    min-width: 300px;
 }
 
-.badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
+.toast.success {
+    border-left: 4px solid #27ae60;
 }
 
-.badge-success {
-    background-color: #28a745;
-    color: white;
+.toast.error {
+    border-left: 4px solid #e74c3c;
 }
 
-.badge-warning {
-    background-color: #ffc107;
-    color: #212529;
+.toast.warning {
+    border-left: 4px solid #f39c12;
 }
 
-.badge-info {
-    background-color: #17a2b8;
-    color: white;
-}
-
-.badge-danger {
-    background-color: #dc3545;
-    color: white;
-}
-
-.alert {
-    padding: 12px 15px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    color: #721c24;
-}
-
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-}
-
-.btn-primary {
-    background-color: #3498db;
-    color: white;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-.btn-success {
-    background-color: #28a745;
-    color: white;
-}
-
-.btn-warning {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-}
-
-.btn-sm {
-    padding: 4px 8px;
-    font-size: 12px;
-}
-
-.d-block {
-    display: block;
-}
-
-.mt-1 {
-    margin-top: 4px;
-}
-
-.schedule-cell.suggested-slot {
-    background: #e8f5e8 !important;
-    border: 2px dashed #28a745 !important;
-    position: relative;
-}
-
-.schedule-cell.suggested-slot::after {
-    content: "✓";
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    color: #28a745;
-    font-weight: bold;
-    font-size: 12px;
-}
-
-/* Tooltip style */
-.schedule-cell[title] {
-    position: relative;
-}
-
-.schedule-cell[title]:hover::before {
-    content: attr(title);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 1000;
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 </style>
 
 <div class="main-content">
-    <!-- HEADER -->
-    <div class="content-header">
-        <div class="page-title">📅 Quản lý thời khóa biểu</div>
-        <div class="action-buttons">
-            <button class="btn btn-primary" onclick="exportSchedule()">Xuất báo cáo</button>
-        </div>
-    </div>
-
-    <!-- FILTER SECTION -->
-    <div class="filter-section">
-        <div class="filter-group">
-            <label class="form-label">Khối</label>
-            <select name="khoi" class="form-control" onchange="updateFilter()">
-                <option value="K10" <?=($khoi=="K10")?"selected":""?>>Khối 10</option>
-                <option value="K11" <?=($khoi=="K11")?"selected":""?>>Khối 11</option>
-                <option value="K12" <?=($khoi=="K12")?"selected":""?>>Khối 12</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label class="form-label">Lớp</label>
-            <select name="lop" class="form-control" onchange="updateFilter()">
-                <?php foreach($lopList as $l): ?>
-                    <option value="<?=$l['maLop']?>" <?=($maLop==$l['maLop'])?"selected":""?>>
-                        <?=$l['tenLop']?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label class="form-label">Tuần</label>
-            <input type="week" name="tuan" class="form-control" value="<?=$week?>" onchange="updateFilter()">
-        </div>
-
-        <div class="filter-group">
-            <label class="form-label">Học kỳ</label>
-            <select name="hocKy" class="form-control" onchange="updateFilter()">
-                <option value="1" <?=($hocKy==1)?"selected":""?>>HK1</option>
-                <option value="2" <?=($hocKy==2)?"selected":""?>>HK2</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label class="form-label">Năm học</label>
-            <input type="text" name="namHoc" class="form-control" value="<?=$namHoc?>" onchange="updateFilter()">
-        </div>
-    </div>
-
-    <!-- STATUS & ACTIONS -->
-    <?php 
-    $isWeekLocked = $model->isWeekLocked($tbd);
-    if($isWeekLocked): ?>
-        <div class="week-locked">
-            <strong>⚠️ Tuần đã khóa</strong>
-            <span>Tuần này đã được khóa, không thể thay đổi lịch học.</span>
-        </div>
-    <?php endif; ?>
-
-    <div class="schedule-status <?= $hasCustomSchedule ? 'warning' : 'info' ?>">
-        <div>
-            <strong>Trạng thái: </strong>
-            <?php if($hasTemplate): ?>
-                <?php if($hasCustomSchedule): ?>
-                    <span class="badge badge-warning">Đang xem lịch tuần chỉnh sửa</span>
-                    <small class="d-block mt-1">Tuần này đã được chỉnh sửa riêng so với lịch mẫu</small>
-                <?php else: ?>
-                    <span class="badge badge-success">Đang xem lịch mẫu</span>
-                    <small class="d-block mt-1">Lịch này được áp dụng cho cả học kỳ</small>
+    <div class="schedule-page">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-title">
+                📅 Quản lý Thời khóa biểu
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-success" onclick="autoArrange()">
+                    ⚙️ Xếp lịch tự động
+                </button>
+                <?php if(isset($hasPreview) && $hasPreview): ?>
+                    <button class="btn btn-info" onclick="confirmWeek()">
+                        📅 Lưu tuần này
+                    </button>
+                    <button class="btn btn-primary" onclick="confirmSchedule()">
+                        💾 Lưu học kỳ này
+                    </button>
+                    <button class="btn btn-warning" onclick="applyToYear()">
+                        📆 Áp dụng cả năm
+                    </button>
+                    <button class="btn btn-secondary" onclick="cancelPreview()">
+                        ❌ Hủy
+                    </button>
                 <?php endif; ?>
-            <?php else: ?>
-                <span class="badge badge-info">Chưa có lịch mẫu</span>
-                <small class="d-block mt-1">Hãy tạo lịch mẫu cho học kỳ này</small>
-            <?php endif; ?>
-        </div>
-        
-        <div class="template-actions">
-            <?php if($hasTemplate && !$isWeekLocked): ?>
-                <?php if($hasCustomSchedule): ?>
-                    <a class="btn btn-secondary btn-sm" 
-                       href="index.php?controller=scheduleAdmin&action=resetWeek&lop=<?=$maLop?>&tuan=<?=$week?>&hocKy=<?=$hocKy?>&namHoc=<?=$namHoc?>"
-                       onclick="return confirm('Xóa lịch tuần này và quay về dùng lịch mẫu?')">
-                       🔄 Dùng lịch mẫu
-                    </a>
-                <?php else: ?>
-                    <a class="btn btn-warning btn-sm" 
-                       href="index.php?controller=scheduleAdmin&action=applyTemplate&lop=<?=$maLop?>&tuan=<?=$week?>&hocKy=<?=$hocKy?>&namHoc=<?=$namHoc?>"
-                       onclick="return confirm('Tạo bản sao lịch mẫu để chỉnh sửa riêng cho tuần này?')">
-                       ✏️ Chỉnh sửa tuần này
-                    </a>
-                <?php endif; ?>
-            <?php endif; ?>
-            
-            <?php if(!$isWeekLocked): ?>
-                <a class="btn btn-success btn-sm"
-                   href="index.php?controller=scheduleAdmin&action=autoArrange&lop=<?=$maLop?>&hocKy=<?=$hocKy?>&namHoc=<?=$namHoc?>"
-                   onclick="return confirm('Tạo lịch mẫu tự động cho cả học kỳ? Lịch cũ sẽ bị xóa.')">
-                   ⚙️ Tạo lịch mẫu
-                </a>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- MESSAGES -->
-    <?php if(!empty($_SESSION['message'])): ?>
-        <div class="alert alert-success"><?=$_SESSION['message']; unset($_SESSION['message']);?></div>
-    <?php endif; ?>
-
-    <?php if(!empty($_SESSION['error'])): ?>
-        <div class="alert alert-danger"><?=$_SESSION['error']; unset($_SESSION['error']);?></div>
-    <?php endif; ?>
-
-    <!-- MAIN CONTENT -->
-    <div class="schedule-container">
-        <!-- PANEL MÔN HỌC -->
-        <div class="subjects-panel">
-            <h3 style="color: #2c3e50; margin-bottom: 15px;">📚 Môn học</h3>
-            <?php foreach($monList as $m): ?>
-                <?php 
-                $hourCheck = $model->checkWeeklyHours($maLop, $m['maMon'], $tbd, $tkt);
-                $isFull = $hourCheck['vuot'];
-                ?>
-                <div class="subject-item <?= $isFull ? 'text-muted' : '' ?>" 
-                     draggable="<?= $isFull || $isWeekLocked ? 'false' : 'true' ?>"
-                     data-mamon="<?=$m['maMon']?>"
-                     data-tiet="<?=$m['soTiet']?>"
-                     onclick="showSuggestionsForSubject('<?=$m['maMon']?>')">
-                     <?=$m['tenMon']?> 
-                     <small><?=$m["soTiet"]?> tiết/tuần - Đã xếp: <?=$hourCheck['daXep']?></small>
-                     <?php if($isFull): ?>
-                        <small class="text-danger">Đã đủ số tiết</small>
-                     <?php endif; ?>
-                     <?php if($isWeekLocked): ?>
-                        <small class="text-danger">Tuần đã khóa</small>
-                     <?php endif; ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- LỊCH HỌC -->
-        <div class="schedule-panel">
-            <h3 style="color: #2c3e50; margin-bottom: 5px;">
-                Lịch học lớp <?=$maLop?>
-                <?php if($hasCustomSchedule): ?>
-                    <span class="badge badge-warning" style="margin-left: 10px;">Tuần chỉnh sửa</span>
-                <?php endif; ?>
-                <?php if($isWeekLocked): ?>
-                    <span class="badge badge-danger" style="margin-left: 10px;">Tuần đã khóa</span>
-                <?php endif; ?>
-            </h3>
-            <p style="color: #7f8c8d; margin-bottom: 15px;">
-                <?=$tbd?> → <?=$tkt?> 
-                | HK<?=$hocKy?> - Năm học: <?=$namHoc?>
-            </p>
-
-            <div class="schedule-grid" id="scheduleGrid">
-                <!-- HEADER -->
-                <div class="schedule-header">Tiết</div>
-                <div class="schedule-header">Thứ 2</div>
-                <div class="schedule-header">Thứ 3</div>
-                <div class="schedule-header">Thứ 4</div>
-                <div class="schedule-header">Thứ 5</div>
-                <div class="schedule-header">Thứ 6</div>
-                <div class="schedule-header">Thứ 7</div>
-
-                <!-- NỘI DUNG LỊCH -->
-                <?php
-                $grid = [];
-                foreach($tkb as $row){
-                    $grid[$row["tiet"]][$row["thu"]] = $row;
-                }
-
-                for($tiet=1; $tiet<=5; $tiet++):
-                    echo "<div class='schedule-time'>Tiết $tiet</div>";
-                    
-                    for($thu=2; $thu<=7; $thu++):
-                        $cell = $grid[$tiet][$thu] ?? null;
-                        $cellClass = $isWeekLocked ? 'week-locked-cell' : '';
-
-                        echo "<div class='schedule-cell $cellClass' 
-                                  data-tiet='$tiet' 
-                                  data-thu='$thu'
-                                  data-lop='$maLop'
-                                  data-tbd='$tbd'
-                                  data-tkt='$tkt'
-                                  data-default-room='$defaultRoom'";
-                        
-                        if($cell){
-                            echo " data-current='".htmlspecialchars(json_encode($cell), ENT_QUOTES, 'UTF-8')."'";
-                        }
-                        
-                        echo ">";
-
-                        if($cell){
-                            echo "<div class='tkb-entry'>
-                                    <strong>".$cell['tenMon']."</strong>
-                                    <small>GV: ".$cell['tenGV']."</small>
-                                    <small>Phòng: ".($cell['tenPhong'] ?? 'Chưa xếp')."</small>
-                                  </div>";
-                                  
-                            if(!$isWeekLocked){
-                                echo "<div style='position:absolute; top:5px; right:5px;'>
-                                        <a href='index.php?controller=scheduleAdmin&action=delete&id=".$cell['maTKB']."' 
-                                           class='btn btn-sm btn-danger'
-                                           style='padding: 2px 6px; font-size: 12px;'
-                                           onclick='return confirm(\"Xóa tiết học này?\")'>×</a>
-                                      </div>";
-                            }
-                        }
-
-                        echo "</div>";
-                    endfor;
-                endfor;
-                ?>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- MODAL THÊM/CẬP NHẬT LỊCH -->
-<div class="modal" id="tkbModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <span id="modalTitle">Thêm lịch học</span>
-            <span class="close-btn" onclick="hideModal()">&times;</span>
-        </div>
+        <!-- Preview Alert -->
+        <?php if(isset($hasPreview) && $hasPreview): ?>
+            <div class="alert alert-info" style="background: #e3f2fd; border: 2px solid #2196f3; border-radius: 8px; padding: 15px 20px; margin-bottom: 20px;">
+                <strong>📋 Đang xem lịch GỢI Ý</strong> - Lịch này chưa được lưu vào hệ thống. 
+                Bấm <strong>"Lưu học kỳ này"</strong> để lưu cho HK<?= $hocKy ?>, hoặc <strong>"Áp dụng cả năm"</strong> để lưu cho cả HK1 + HK2.
+            </div>
+        <?php endif; ?>
 
-        <form method="POST" action="index.php?controller=scheduleAdmin&action=save" id="scheduleForm">
-            <input type="hidden" name="maLop" id="fmMaLop">
-            <input type="hidden" name="thu" id="fmThu">
-            <input type="hidden" name="tiet" id="fmTiet">
-            <input type="hidden" name="tbd" id="fmTbd">
-            <input type="hidden" name="tkt" id="fmTkt">
-            <input type="hidden" name="hocKy" value="<?=$hocKy?>">
-            <input type="hidden" name="namHoc" value="<?=$namHoc?>">
-            <input type="hidden" name="is_edit" id="fmEdit" value="0">
-            <input type="hidden" name="maTKB" id="fmMaTKB">
-
-            <div class="form-group">
-                <label class="form-label">Môn học</label>
-                <select name="maMon" id="fmMon" class="form-control" onchange="onSubjectChange()">
-                    <option value="">-- Chọn môn --</option>
-                    <?php foreach($monList as $m): ?>
-                        <option value="<?=$m['maMon']?>"><?=$m['tenMon']?></option>
-                    <?php endforeach; ?>
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>Khối</label>
+                <select id="filterKhoi" onchange="onFilterChange('khoi')">
+                    <option value="K10" <?= $khoi == "K10" ? "selected" : "" ?>>Khối 10</option>
+                    <option value="K11" <?= $khoi == "K11" ? "selected" : "" ?>>Khối 11</option>
+                    <option value="K12" <?= $khoi == "K12" ? "selected" : "" ?>>Khối 12</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label class="form-label">Giáo viên</label>
-<select name="maGV" id="fmGV" class="form-control" onchange="checkRealTimeConflict()">
-    <option value="">-- Chọn giáo viên --</option>
-    <?php 
-    // Lọc giáo viên theo môn học (sẽ được cập nhật bằng JavaScript)
-    foreach($gvList as $g): 
-
-
-
-        // Ban đầu không hiển thị, sẽ được lọc bằng JS
-    ?>
-        <option value="<?=$g['maGV']?>" data-mon="<?=$g['monGiangDay']?>" style="display: none;">
-            <?=$g['hoVaTen']?> - <?=$g['monGiangDay']?>
-        </option>
-    <?php endforeach; ?>
-</select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Phòng học</label>
-                <select name="maPhong" id="fmPhong" class="form-control" onchange="checkRealTimeConflict()">
-                    <option value="">-- Chọn phòng --</option>
-                    <?php foreach($roomList as $r): ?>
-                        <option value="<?=$r['maPhong']?>" <?= ($r['maPhong'] == $defaultRoom) ? 'selected' : '' ?>>
-                            <?=$r['tenPhong']?>
+            
+            <div class="filter-group">
+                <label>Lớp</label>
+                <select id="filterLop" onchange="onFilterChange('lop')">
+                    <?php foreach($lopList as $l): ?>
+                        <option value="<?= $l['maLop'] ?>" <?= $maLop == $l['maLop'] ? "selected" : "" ?>>
+                            <?= $l['tenLop'] ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
-
-            <div id="conflictWarning" class="alert alert-danger" style="display: none; margin-top: 15px;"></div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Lưu lại</button>
-                <button type="button" class="btn btn-secondary" onclick="hideModal()">Hủy thao tác</button>
+            
+            <div class="filter-group">
+                <label>Học kỳ</label>
+                <select id="filterHocKy" onchange="onFilterChange('hocKy')">
+                    <option value="1" <?= $hocKy == 1 ? "selected" : "" ?>>Học kỳ 1</option>
+                    <option value="2" <?= $hocKy == 2 ? "selected" : "" ?>>Học kỳ 2</option>
+                </select>
             </div>
-        </form>
+            
+            <div class="filter-group">
+                <label>Năm học</label>
+                <select id="filterNamHoc" onchange="onFilterChange('namHoc')">
+                    <option value="2024-2025" <?= $namHoc == "2024-2025" ? "selected" : "" ?>>2024-2025</option>
+                    <option value="2025-2026" <?= $namHoc == "2025-2026" ? "selected" : "" ?>>2025-2026</option>
+                    <option value="2026-2027" <?= $namHoc == "2026-2027" ? "selected" : "" ?>>2026-2027</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Tuần</label>
+                <input type="week" id="filterTuan" value="<?= $week ?>" onchange="onFilterChange('tuan')">
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-info">
+                <span class="status-badge week">📅 Học kỳ <?= $hocKy ?> - <?= $namHoc ?></span>
+                <span class="status-badge" style="background: #e8f5e9; color: #388e3c;">📆 Tuần: <?= $tbd ?> → <?= $tkt ?></span>
+                <?php if(isset($hasPreview) && $hasPreview): ?>
+                    <span class="status-badge" style="background: #e3f2fd; color: #1976d2;">📋 Đang xem lịch GỢI Ý</span>
+                <?php elseif($hasCustomSchedule): ?>
+                    <span class="status-badge custom">✅ Đã có lịch (<?= count($tkb) ?> tiết)</span>
+                <?php else: ?>
+                    <span class="status-badge" style="background: #fff3e0; color: #f57c00;">⚠️ Chưa có lịch</span>
+                <?php endif; ?>
+            </div>
+            
+            <div class="status-actions">
+                <?php if($hasCustomSchedule && !(isset($hasPreview) && $hasPreview)): ?>
+                    <button class="btn btn-sm btn-danger" onclick="clearSemester()">
+                        🗑️ Xóa lịch học kỳ này
+                    </button>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <?php if(!empty($_SESSION['message'])): ?>
+            <div class="alert alert-success">
+                ✅ <?= $_SESSION['message']; unset($_SESSION['message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if(!empty($_SESSION['error'])): ?>
+            <div class="alert alert-danger">
+                ❌ <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if($isWeekLocked && $mode === 'week'): ?>
+            <div class="alert alert-warning">
+                🔒 <strong>Tuần đã khóa:</strong> Không thể thay đổi lịch học trong tuần này.
+            </div>
+        <?php endif; ?>
+
+        <!-- Main Container -->
+        <div class="schedule-container">
+            <!-- Subjects Panel -->
+            <div class="subjects-panel">
+                <h3>📚 Môn học</h3>
+                <?php foreach($monList as $m): 
+                    $hours = $subjectHours[$m['maMon']] ?? ['daXep' => 0, 'toiDa' => 0, 'conLai' => 0, 'vuot' => false];
+                    $isFull = $hours['vuot'];
+                    $isDisabled = $isFull || ($isWeekLocked && $mode === 'week');
+                ?>
+                    <div class="subject-item <?= $isDisabled ? 'disabled' : '' ?> <?= $isFull ? 'full' : '' ?>" 
+                         draggable="<?= $isDisabled ? 'false' : 'true' ?>"
+                         data-mamon="<?= $m['maMon'] ?>"
+                         data-tenmon="<?= $m['tenMon'] ?>"
+                         data-sotiet="<?= $m['soTiet'] ?>"
+                         onclick="showSuggestions('<?= $m['maMon'] ?>')">
+                        <div class="subject-name"><?= $m['tenMon'] ?></div>
+                        <div class="subject-info">
+                            <?= $hours['daXep'] ?>/<?= $hours['toiDa'] ?> tiết
+                            <?php if($isFull): ?>
+                                <span style="color: #27ae60;">✓ Đủ</span>
+                            <?php endif; ?>
+                        </div>
+                        <span class="subject-hours"><?= $hours['conLai'] ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Schedule Panel -->
+            <div class="schedule-panel">
+                <div class="schedule-header-info">
+                    <div>
+                        <div class="schedule-title">
+                            Lịch học lớp <?= $maLop ?>
+                        </div>
+                        <div class="schedule-subtitle">
+                            HK<?= $hocKy ?> - Năm học: <?= $namHoc ?>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Grid -->
+                <div class="schedule-grid" id="scheduleGrid">
+                    <!-- Header Row -->
+                    <div class="grid-header">Tiết</div>
+                    <div class="grid-header">Thứ 2</div>
+                    <div class="grid-header">Thứ 3</div>
+                    <div class="grid-header">Thứ 4</div>
+                    <div class="grid-header">Thứ 5</div>
+                    <div class="grid-header">Thứ 6</div>
+                    <div class="grid-header">Thứ 7</div>
+
+                    <!-- Grid Content -->
+                    <?php
+                    // Tạo grid dữ liệu
+                    $grid = [];
+                    foreach($tkb as $row){
+                        $grid[$row["tiet"]][$row["thu"]] = $row;
+                    }
+
+                    $periodTimes = [
+                        1 => '7:00 - 7:45',
+                        2 => '7:50 - 8:35',
+                        3 => '8:50 - 9:35',
+                        4 => '9:40 - 10:25',
+                        5 => '10:30 - 11:15',
+                        // Buổi chiều
+                        6 => '13:00 - 13:45',
+                        7 => '13:50 - 14:35',
+                        8 => '14:50 - 15:35'
+                    ];
+
+                    for($tiet = 1; $tiet <= 8; $tiet++):
+                    ?>
+                        <div class="grid-time <?= $tiet >= 6 ? 'afternoon' : '' ?>">
+                            <span class="period">Tiết <?= $tiet ?></span>
+                            <span class="time"><?= $periodTimes[$tiet] ?></span>
+                        </div>
+
+                        <?php for($thu = 2; $thu <= 7; $thu++):
+                            $cell = $grid[$tiet][$thu] ?? null;
+                            $cellClass = ($isWeekLocked && $mode === 'week') ? 'locked' : '';
+                            if($tiet >= 6) $cellClass .= ' afternoon';
+                            $cellData = $cell ? htmlspecialchars(json_encode($cell), ENT_QUOTES, 'UTF-8') : '';
+                        ?>
+                            <div class="grid-cell <?= $cellClass ?>"
+                                 data-thu="<?= $thu ?>"
+                                 data-tiet="<?= $tiet ?>"
+                                 data-cell="<?= $cellData ?>"
+                                 ondragover="onDragOver(event)"
+                                 ondragleave="onDragLeave(event)"
+                                 ondrop="onDrop(event)"
+                                 onclick="onCellClick(this)">
+                                
+                                <?php if($cell): ?>
+                                    <div class="schedule-entry">
+                                        <div class="entry-subject"><?= $cell['tenMon'] ?></div>
+                                        <div class="entry-teacher">👨‍🏫 <?= $cell['tenGV'] ?></div>
+                                        <div class="entry-room">🏠 <?= $cell['tenPhong'] ?? 'Chưa xếp' ?></div>
+                                        
+                                        <?php if(!$isWeekLocked || $mode === 'template'): ?>
+                                            <button class="entry-delete" onclick="deleteEntry(event, <?= $thu ?>, <?= $tiet ?>)" title="Xóa">
+                                                ×
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endfor; ?>
+                    <?php endfor; ?>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<script>
-let dragMon = null;
-let currentSuggestions = [];
-let isWeekLocked = <?= $isWeekLocked ? 'true' : 'false' ?>;
+<!-- Modal Thêm/Sửa Lịch -->
+<div class="modal-overlay" id="scheduleModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span class="modal-title" id="modalTitle">Thêm lịch học</span>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        
+        <div class="modal-body">
+            <form id="scheduleForm">
+                <input type="hidden" name="maLop" id="fmMaLop" value="<?= $maLop ?>">
+                <input type="hidden" name="thu" id="fmThu">
+                <input type="hidden" name="tiet" id="fmTiet">
+                <input type="hidden" name="tbd" id="fmTbd" value="<?= $tbd ?>">
+                <input type="hidden" name="tkt" id="fmTkt" value="<?= $tkt ?>">
+                <input type="hidden" name="hocKy" value="<?= $hocKy ?>">
+                <input type="hidden" name="namHoc" value="<?= $namHoc ?>">
+                <input type="hidden" name="mode" value="<?= $mode ?>">
+                <input type="hidden" name="is_edit" id="fmIsEdit" value="0">
+                <input type="hidden" name="maTKB" id="fmMaTKB">
 
-// CẬP NHẬT FILTER
-function updateFilter() {
-    const form = document.createElement('form');
-    form.method = 'GET';
-    form.action = 'index.php';
-    
-    const params = {
+                <div class="form-info">
+                    <div class="form-info-item">
+                        <span class="form-info-label">Lớp:</span>
+                        <span class="form-info-value"><?= $maLop ?></span>
+                    </div>
+                    <div class="form-info-item">
+                        <span class="form-info-label">Thời gian:</span>
+                        <span class="form-info-value" id="infoTime">--</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Môn học *</label>
+                    <select name="maMon" id="fmMon" class="form-control" required onchange="onSubjectChange()">
+                        <option value="">-- Chọn môn học --</option>
+                        <?php foreach($monList as $m): ?>
+                            <option value="<?= $m['maMon'] ?>" data-tenmon="<?= $m['tenMon'] ?>">
+                                <?= $m['tenMon'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Giáo viên *</label>
+                    <select name="maGV" id="fmGV" class="form-control" required onchange="checkConflict()">
+                        <option value="">-- Chọn giáo viên --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phòng học</label>
+                    <select name="maPhong" id="fmPhong" class="form-control" onchange="checkConflict()">
+                        <option value="">-- Chọn phòng --</option>
+                        <?php foreach($roomList as $r): ?>
+                            <option value="<?= $r['maPhong'] ?>" <?= ($r['maPhong'] == $defaultRoom) ? 'selected' : '' ?>>
+                                <?= $r['tenPhong'] ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="conflict-warning" id="conflictWarning" style="display: none;">
+                    <strong>⚠️ Cảnh báo xung đột:</strong>
+                    <ul id="conflictList"></ul>
+                </div>
+            </form>
+        </div>
+        
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="saveSchedule()">💾 Lưu lại</button>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===== CONFIGURATION =====
+const CONFIG = {
+    maLop: '<?= $maLop ?>',
+    khoi: '<?= $khoi ?>',
+    hocKy: <?= $hocKy ?>,
+    namHoc: '<?= $namHoc ?>',
+    tbd: '<?= $tbd ?>',
+    tkt: '<?= $tkt ?>',
+    week: '<?= $week ?>',
+    mode: '<?= $mode ?>',
+    defaultRoom: '<?= $defaultRoom ?>',
+    isWeekLocked: <?= $isWeekLocked ? 'true' : 'false' ?>
+};
+
+// Phân công giáo viên bộ môn từ bảng pcgvbm (ưu tiên dùng)
+const teacherAssignments = {
+    <?php foreach($teacherAssignments as $maMon => $info): ?>
+        '<?= $maMon ?>': {maGV: '<?= $info['maGV'] ?>', hoVaTen: '<?= $info['hoVaTen'] ?>'},
+    <?php endforeach; ?>
+};
+
+// Giáo viên theo môn từ bảng GIAOVIEN (fallback nếu không có phân công)
+const gvByMon = {
+    <?php foreach($monList as $m): ?>
+        '<?= $m['maMon'] ?>': [
+            <?php 
+            $gvMon = array_filter($gvList, function($g) use ($m) {
+                return $g['monGiangDay'] == $m['maMon'];
+            });
+            foreach($gvMon as $g): ?>
+                {maGV: '<?= $g['maGV'] ?>', hoVaTen: '<?= $g['hoVaTen'] ?>'},
+            <?php endforeach; ?>
+        ],
+    <?php endforeach; ?>
+};
+
+let draggedSubject = null;
+let currentSuggestions = [];
+
+// ===== FILTER FUNCTIONS =====
+function onFilterChange(changedField = null) {
+    const params = new URLSearchParams({
         controller: 'scheduleAdmin',
         action: 'index',
-        khoi: document.querySelector('[name="khoi"]').value,
-        lop: document.querySelector('[name="lop"]').value,
-        tuan: document.querySelector('[name="tuan"]').value,
-        hocKy: document.querySelector('[name="hocKy"]').value,
-        namHoc: document.querySelector('[name="namHoc"]').value
-    };
+        khoi: document.getElementById('filterKhoi').value,
+        hocKy: document.getElementById('filterHocKy').value,
+        namHoc: document.getElementById('filterNamHoc').value,
+        tuan: document.getElementById('filterTuan').value,
+        mode: CONFIG.mode
+    });
     
-    for (const key in params) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = params[key];
-        form.appendChild(input);
+    // Nếu đổi khối thì không gửi lớp, để controller tự chọn lớp đầu tiên
+    if(changedField !== 'khoi') {
+        params.append('lop', document.getElementById('filterLop').value);
     }
     
-    document.body.appendChild(form);
-    form.submit();
+    window.location.href = 'index.php?' + params.toString();
 }
 
-// DRAG AND DROP
-document.querySelectorAll(".subject-item").forEach(item => {
-    item.addEventListener("dragstart", (e) => {
-        if(item.getAttribute('draggable') === 'true'){
-            dragMon = item.dataset.mamon;
-        } else {
-            e.preventDefault();
-        }
+function switchMode(newMode) {
+    const params = new URLSearchParams({
+        controller: 'scheduleAdmin',
+        action: 'index',
+        khoi: CONFIG.khoi,
+        lop: CONFIG.maLop,
+        hocKy: CONFIG.hocKy,
+        namHoc: CONFIG.namHoc,
+        mode: newMode
+    });
+    
+    window.location.href = 'index.php?' + params.toString();
+}
+
+// ===== DRAG & DROP =====
+document.querySelectorAll('.subject-item:not(.disabled)').forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+        draggedSubject = {
+            maMon: item.dataset.mamon,
+            tenMon: item.dataset.tenmon
+        };
+        item.classList.add('dragging');
+    });
+    
+    item.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        draggedSubject = null;
+        clearSuggestions();
     });
 });
 
-document.querySelectorAll(".schedule-cell").forEach(cell => {
-    if(cell.classList.contains('week-locked-cell')) return;
+function onDragOver(e) {
+    e.preventDefault();
+    const cell = e.currentTarget;
+    if(!cell.classList.contains('locked') && !cell.querySelector('.schedule-entry')) {
+        cell.classList.add('highlight');
+    }
+}
 
-    cell.addEventListener("dragover", e => {
-        e.preventDefault();
-        cell.classList.add("highlight");
-    });
+function onDragLeave(e) {
+    e.currentTarget.classList.remove('highlight');
+}
 
-    cell.addEventListener("dragleave", () => {
-        cell.classList.remove("highlight");
-    });
-
-    cell.addEventListener("drop", (e) => {
-        e.preventDefault();
-        cell.classList.remove("highlight");
-        if(dragMon){
-            openForm(cell, dragMon);
-        }
-    });
-
-    cell.addEventListener("click", () => {
-        if(!isWeekLocked){
-            openForm(cell, null);
-        }
-    });
-});
-
-// MODAL FUNCTIONS
-function openForm(cell, mon) {
-    if(isWeekLocked) {
-        alert("Tuần này đã khóa, không thể thay đổi lịch học!");
+function onDrop(e) {
+    e.preventDefault();
+    const cell = e.currentTarget;
+    cell.classList.remove('highlight');
+    
+    if(cell.classList.contains('locked')) {
+        showToast('Tuần này đã khóa!', 'error');
         return;
     }
-
-    document.getElementById("tkbModal").style.display = "flex";
-    document.getElementById("fmMaLop").value = cell.dataset.lop;
-    document.getElementById("fmThu").value = cell.dataset.thu;
-    document.getElementById("fmTiet").value = cell.dataset.tiet;
-    document.getElementById("fmTbd").value = cell.dataset.tbd;
-    document.getElementById("fmTkt").value = cell.dataset.tkt;
-
-    const existingEntry = cell.querySelector('.tkb-entry');
     
-    if(existingEntry && cell.dataset.current) {
-        // Chế độ cập nhật
-        document.getElementById("fmEdit").value = "1";
-        document.getElementById("modalTitle").textContent = "Cập nhật lịch học";
-        
-        try {
-            const currentData = JSON.parse(cell.dataset.current);
-            document.getElementById("fmMon").value = currentData.maMon || '';
-            document.getElementById("fmGV").value = currentData.maGV || '';
-            document.getElementById("fmPhong").value = currentData.maPhong || cell.dataset.defaultRoom || '';
-            document.getElementById("fmMaTKB").value = currentData.maTKB || '';
-        } catch(e) {
-            console.error('Error parsing current data:', e);
-        }
-    } else {
-        // Chế độ thêm mới
-        document.getElementById("fmEdit").value = "0";
-        document.getElementById("modalTitle").textContent = "Thêm lịch học";
-        document.getElementById("fmMaTKB").value = "";
-        
-        if(mon) {
-            document.getElementById("fmMon").value = mon;
-        } else {
-            document.getElementById("fmMon").value = "";
-        }
-        
-        // Reset form
-        document.getElementById("fmGV").value = "";
-        document.getElementById("fmPhong").value = cell.dataset.defaultRoom || "";
+    if(cell.querySelector('.schedule-entry')) {
+        showToast('Ô này đã có môn học!', 'warning');
+        return;
     }
     
-    // Hiển thị gợi ý và kiểm tra xung đột
-    if(document.getElementById("fmMon").value) {
+    if(draggedSubject) {
+        openModal(cell, draggedSubject.maMon);
+    }
+}
+
+// ===== CELL CLICK =====
+function onCellClick(cell) {
+    if(CONFIG.isWeekLocked && CONFIG.mode === 'week') {
+        showToast('Tuần này đã khóa!', 'error');
+        return;
+    }
+    
+    const existingEntry = cell.querySelector('.schedule-entry');
+    const cellData = cell.dataset.cell ? JSON.parse(cell.dataset.cell) : null;
+    
+    if(existingEntry && cellData) {
+        // Edit mode
+        openModal(cell, cellData.maMon, cellData);
+    } else {
+        // Add mode
+        openModal(cell, null);
+    }
+}
+
+// ===== MODAL FUNCTIONS =====
+function openModal(cell, maMon, editData = null) {
+    const thu = cell.dataset.thu;
+    const tiet = cell.dataset.tiet;
+    
+    document.getElementById('fmThu').value = thu;
+    document.getElementById('fmTiet').value = tiet;
+    document.getElementById('infoTime').textContent = `Thứ ${thu} - Tiết ${tiet}`;
+    
+    if(editData) {
+        document.getElementById('modalTitle').textContent = 'Cập nhật lịch học';
+        document.getElementById('fmIsEdit').value = '1';
+        document.getElementById('fmMaTKB').value = editData.maTKB || editData.maTemplate || '';
+        document.getElementById('fmMon').value = editData.maMon;
+        document.getElementById('fmPhong').value = editData.maPhong || CONFIG.defaultRoom;
+        
+        // Load giáo viên và chọn
         onSubjectChange();
-    }
-    
-    // Kiểm tra xung đột real-time
-    setTimeout(checkRealTimeConflict, 100);
-}
-
-function hideModal() {
-    if (confirm("Bạn có chắc chắn muốn hủy thao tác?")) {
-        document.getElementById("tkbModal").style.display = "none";
-        showSuggestions();
-    }
-}
-
-// SUGGESTION FUNCTIONS
-function showSuggestions() {
-    document.querySelectorAll('.suggested-slot, .conflict-slot').forEach(cell => {
-        cell.classList.remove('suggested-slot', 'conflict-slot');
-    });
-    currentSuggestions = [];
-}
-
-function showSuggestionsForSubject(maMon) {
-    if(isWeekLocked) {
-        alert("Tuần này đã khóa, không thể thay đổi lịch học!");
-        return;
-    }
-
-    fetch(`index.php?controller=scheduleAdmin&action=getSuggestedSlots&lop=<?=$maLop?>&mon=${maMon}&tuan=<?=$week?>`)
-        .then(response => response.json())
-        .then(suggestions => {
-            showSuggestions();
-            
-            suggestions.forEach(slot => {
-                const cell = document.querySelector(`[data-thu="${slot.thu}"][data-tiet="${slot.tiet}"]`);
-                if(cell) {
-                    cell.classList.add('suggested-slot');
-                    currentSuggestions.push(cell);
-                }
-            });
-            
-            if(suggestions.length === 0) {
-                alert('Không có ô trống phù hợp cho môn học này!');
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching suggestions:', error);
-            alert('Có lỗi xảy ra khi tải gợi ý!');
-        });
-}
-
-function onSubjectChange() {
-    const maMon = document.getElementById('fmMon').value;
-    if(maMon) {
-        showSuggestionsForSubject(maMon);
+        setTimeout(() => {
+            document.getElementById('fmGV').value = editData.maGV;
+            checkConflict();
+        }, 100);
     } else {
-        showSuggestions();
-    }
-}
-
-// REAL-TIME CONFLICT CHECKING
-function checkRealTimeConflict() {
-    const maLop = document.getElementById('fmMaLop').value;
-    const thu = document.getElementById('fmThu').value;
-    const tiet = document.getElementById('fmTiet').value;
-    const maGV = document.getElementById('fmGV').value;
-    const maPhong = document.getElementById('fmPhong').value;
-    const tbd = document.getElementById('fmTbd').value;
-    const tkt = document.getElementById('fmTkt').value;
-    
-    if (!maGV || !maPhong || !maLop) return;
-    
-    // Gọi API kiểm tra xung đột
-    fetch(`index.php?controller=scheduleAdmin&action=checkConflict&lop=${maLop}&thu=${thu}&tiet=${tiet}&gv=${maGV}&phong=${maPhong}&tbd=${tbd}&tkt=${tkt}`)
-        .then(response => response.json())
-        .then(conflicts => {
-            const warningDiv = document.getElementById('conflictWarning');
-            if (conflicts.length > 0) {
-                warningDiv.style.display = 'block';
-                let conflictText = '<strong>⚠️ Cảnh báo xung đột:</strong><ul style="margin: 8px 0 0 0; padding-left: 20px;">';
-                conflicts.forEach(conflict => {
-                    conflictText += `<li>${conflict}</li>`;
-                });
-                conflictText += '</ul>';
-                warningDiv.innerHTML = conflictText;
-            } else {
-                warningDiv.style.display = 'none';
-                warningDiv.innerHTML = '';
-            }
-        })
-        .catch(error => {
-            console.error('Error checking conflict:', error);
-        });
-}
-
-// CLOSE MODAL WHEN CLICKING OUTSIDE
-window.onclick = function(event) {
-    const modal = document.getElementById('tkbModal');
-    if (event.target == modal) {
-        hideModal();
-    }
-}
-
-function exportSchedule() {
-    alert("Xuất báo cáo lịch học!");
-    // Có thể mở rộng để xuất file Excel/PDF
-}
-
-// Thêm event listeners cho form
-document.addEventListener('DOMContentLoaded', function() {
-    const fmGV = document.getElementById('fmGV');
-    const fmPhong = document.getElementById('fmPhong');
-    
-    if(fmGV) {
-        fmGV.addEventListener('change', checkRealTimeConflict);
+        document.getElementById('modalTitle').textContent = 'Thêm lịch học';
+        document.getElementById('fmIsEdit').value = '0';
+        document.getElementById('fmMaTKB').value = '';
+        document.getElementById('fmMon').value = maMon || '';
+        document.getElementById('fmGV').innerHTML = '<option value="">-- Chọn giáo viên --</option>';
+        document.getElementById('fmPhong').value = CONFIG.defaultRoom;
+        
+        if(maMon) {
+            onSubjectChange();
+        }
     }
     
-    if(fmPhong) {
-        fmPhong.addEventListener('change', checkRealTimeConflict);
-    }
-});
+    document.getElementById('conflictWarning').style.display = 'none';
+    document.getElementById('scheduleModal').classList.add('active');
+}
 
+function closeModal() {
+    document.getElementById('scheduleModal').classList.remove('active');
+    clearSuggestions();
+}
 
 function onSubjectChange() {
     const maMon = document.getElementById('fmMon').value;
     const gvSelect = document.getElementById('fmGV');
     
-    // Xóa tất cả options trừ option mặc định
     gvSelect.innerHTML = '<option value="">-- Chọn giáo viên --</option>';
     
-    if(maMon && gvByMon[maMon]) {
-        // Thêm các giáo viên của môn đó
+    // Ưu tiên lấy giáo viên từ bảng phân công (pcgvbm)
+    if(maMon && teacherAssignments[maMon]) {
+        // Có phân công trong pcgvbm - thêm giáo viên được phân công lên đầu
+        const assigned = teacherAssignments[maMon];
+        const assignedOption = document.createElement('option');
+        assignedOption.value = assigned.maGV;
+        assignedOption.textContent = assigned.hoVaTen + ' (Được phân công)';
+        gvSelect.appendChild(assignedOption);
+        
+        // Tự động chọn giáo viên được phân công
+        gvSelect.value = assigned.maGV;
+        checkConflict();
+        
+        // Vẫn hiển thị các GV khác cùng môn như là lựa chọn phụ
+        if(gvByMon[maMon]) {
+            gvByMon[maMon].forEach(gv => {
+                if(gv.maGV !== assigned.maGV) {
+                    const option = document.createElement('option');
+                    option.value = gv.maGV;
+                    option.textContent = gv.hoVaTen;
+                    gvSelect.appendChild(option);
+                }
+            });
+        }
+    } else if(maMon && gvByMon[maMon]) {
+        // Không có phân công trong pcgvbm - fallback sang gvByMon
         gvByMon[maMon].forEach(gv => {
             const option = document.createElement('option');
             option.value = gv.maGV;
@@ -966,37 +1356,313 @@ function onSubjectChange() {
             gvSelect.appendChild(option);
         });
         
-        // Nếu chỉ có một giáo viên, chọn luôn
+        // Nếu chỉ có 1 GV, chọn luôn
         if(gvByMon[maMon].length === 1) {
             gvSelect.value = gvByMon[maMon][0].maGV;
+            checkConflict();
         }
     }
+}
+
+function checkConflict() {
+    const maGV = document.getElementById('fmGV').value;
+    const maPhong = document.getElementById('fmPhong').value;
+    const thu = document.getElementById('fmThu').value;
+    const tiet = document.getElementById('fmTiet').value;
     
-    if(maMon) {
-        showSuggestionsForSubject(maMon);
-    } else {
-        showSuggestions();
+    if(!maGV) return;
+    
+    const params = new URLSearchParams({
+        controller: 'scheduleAdmin',
+        action: 'checkConflict',
+        lop: CONFIG.maLop,
+        thu: thu,
+        tiet: tiet,
+        gv: maGV,
+        phong: maPhong,
+        tbd: CONFIG.tbd,
+        tkt: CONFIG.tkt,
+        hocKy: CONFIG.hocKy,
+        namHoc: CONFIG.namHoc,
+        mode: CONFIG.mode
+    });
+    
+    fetch('index.php?' + params.toString())
+        .then(res => res.json())
+        .then(conflicts => {
+            const warningDiv = document.getElementById('conflictWarning');
+            const listDiv = document.getElementById('conflictList');
+            
+            if(conflicts.length > 0) {
+                listDiv.innerHTML = conflicts.map(c => `<li>${c.message}</li>`).join('');
+                warningDiv.style.display = 'block';
+            } else {
+                warningDiv.style.display = 'none';
+            }
+        })
+        .catch(err => console.error('Error checking conflict:', err));
+}
+
+// ===== SAVE SCHEDULE =====
+function saveSchedule() {
+    try {
+        // Lấy giá trị trực tiếp từ elements
+        const maLop = document.getElementById('fmMaLop').value;
+        const maMon = document.getElementById('fmMon').value;
+        const maGV = document.getElementById('fmGV').value;
+        const thu = document.getElementById('fmThu').value;
+        const tiet = document.getElementById('fmTiet').value;
+        const tbd = document.getElementById('fmTbd').value;
+        const tkt = document.getElementById('fmTkt').value;
+        const maPhong = document.getElementById('fmPhong').value;
+        const isEdit = document.getElementById('fmIsEdit').value;
+        const maTKB = document.getElementById('fmMaTKB').value;
+        
+        console.log('Values:', {maLop, maMon, maGV, thu, tiet, tbd, tkt, maPhong});
+        
+        // Validate
+        if(!maLop) {
+            alert('Lỗi: maLop rỗng! Value=' + maLop);
+            return;
+        }
+        if(!maMon) {
+            alert('Lỗi: Vui lòng chọn môn học!');
+            return;
+        }
+        if(!maGV) {
+            alert('Lỗi: Vui lòng chọn giáo viên!');
+            return;
+        }
+        
+        // Tạo FormData thủ công
+        const formData = new FormData();
+        formData.append('maLop', maLop);
+        formData.append('thu', thu);
+        formData.append('tiet', tiet);
+        formData.append('maMon', maMon);
+        formData.append('maGV', maGV);
+        formData.append('hocKy', CONFIG.hocKy);
+        formData.append('namHoc', CONFIG.namHoc);
+        formData.append('tbd', tbd);
+        formData.append('tkt', tkt);
+        formData.append('maPhong', maPhong);
+        formData.append('mode', CONFIG.mode);
+        formData.append('is_edit', isEdit);
+        formData.append('maTKB', maTKB);
+        
+        showLoading();
+        
+        fetch('index.php?controller=scheduleAdmin&action=save', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.text())
+        .then(text => {
+            console.log('Response:', text);
+            hideLoading();
+            try {
+                const data = JSON.parse(text);
+                if(data.success) {
+                    showToast(data.message, 'success');
+                    closeModal();
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    alert('Lỗi: ' + data.message + (data.debug ? '\n\nDebug: ' + JSON.stringify(data.debug) : ''));
+                    showToast(data.message, 'error');
+                }
+            } catch(e) {
+                alert('Lỗi parse JSON: ' + text);
+            }
+        })
+        .catch(err => {
+            hideLoading();
+            alert('Fetch error: ' + err.message);
+        });
+    } catch(e) {
+        alert('JavaScript Error: ' + e.message + '\n' + e.stack);
+    }
+}
+
+// ===== DELETE ENTRY =====
+function deleteEntry(e, thu, tiet) {
+    e.stopPropagation();
+    
+    if(!confirm('Bạn có chắc muốn xóa tiết học này?')) return;
+    
+    const formData = new FormData();
+    formData.append('maLop', CONFIG.maLop);
+    formData.append('thu', thu);
+    formData.append('tiet', tiet);
+    formData.append('tbd', CONFIG.tbd);
+    formData.append('tkt', CONFIG.tkt);
+    formData.append('hocKy', CONFIG.hocKy);
+    formData.append('namHoc', CONFIG.namHoc);
+    formData.append('mode', CONFIG.mode);
+    
+    showLoading();
+    
+    fetch('index.php?controller=scheduleAdmin&action=delete', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        hideLoading();
+        if(data.success) {
+            showToast(data.message, 'success');
+            setTimeout(() => location.reload(), 500);
+        } else {
+            showToast(data.message, 'error');
+        }
+    })
+    .catch(err => {
+        hideLoading();
+        showToast('Có lỗi xảy ra!', 'error');
+        console.error(err);
+    });
+}
+
+// ===== SUGGESTIONS =====
+function showSuggestions(maMon) {
+    if(CONFIG.isWeekLocked && CONFIG.mode === 'week') {
+        showToast('Tuần này đã khóa!', 'error');
+        return;
     }
     
-    // Kiểm tra xung đột nếu đã chọn giáo viên
-    checkRealTimeConflict();
-}
-
-
-    const gvByMon = {
-    <?php foreach($monList as $m): ?>
-        '<?=$m['maMon']?>': [
-            <?php 
-            $gvMon = array_filter($gvList, function($g) use ($m) {
-                return $g['monGiangDay'] == $m['tenMon'];
+    const params = new URLSearchParams({
+        controller: 'scheduleAdmin',
+        action: 'getSuggestedSlots',
+        lop: CONFIG.maLop,
+        mon: maMon,
+        tuan: CONFIG.week,
+        hocKy: CONFIG.hocKy,
+        namHoc: CONFIG.namHoc
+    });
+    
+    fetch('index.php?' + params.toString())
+        .then(res => res.json())
+        .then(suggestions => {
+            clearSuggestions();
+            
+            if(suggestions.length === 0) {
+                showToast('Không có ô trống phù hợp!', 'warning');
+                return;
+            }
+            
+            suggestions.forEach(slot => {
+                const cell = document.querySelector(`[data-thu="${slot.thu}"][data-tiet="${slot.tiet}"]`);
+                if(cell && !cell.querySelector('.schedule-entry')) {
+                    cell.classList.add('suggested');
+                    cell.title = slot.reason;
+                    currentSuggestions.push(cell);
+                }
             });
-            foreach($gvMon as $g): ?>
-                {maGV: '<?=$g['maGV']?>', hoVaTen: '<?=$g['hoVaTen']?>'},
-            <?php endforeach; ?>
-        ],
-    <?php endforeach; ?>
-};
+        })
+        .catch(err => console.error('Error fetching suggestions:', err));
 }
+
+function clearSuggestions() {
+    currentSuggestions.forEach(cell => {
+        cell.classList.remove('suggested', 'highlight');
+        cell.title = '';
+    });
+    currentSuggestions = [];
+}
+
+// ===== AUTO ARRANGE =====
+function autoArrange() {
+    if(!confirm('Tạo lịch gợi ý tự động? Bạn sẽ cần bấm "Lưu tuần này", "Lưu học kỳ này" hoặc "Áp dụng cả năm" để lưu.')) return;
+    
+    const url = `index.php?controller=scheduleAdmin&action=autoArrange&lop=${CONFIG.maLop}&khoi=${CONFIG.khoi}&hocKy=${CONFIG.hocKy}&namHoc=${CONFIG.namHoc}`;
+    window.location.href = url;
+}
+
+// ===== CONFIRM WEEK (Lưu tuần này) =====
+function confirmWeek() {
+    if(!confirm('Lưu lịch này cho tuần ' + CONFIG.tbd + ' → ' + CONFIG.tkt + '?')) return;
+    
+    const url = `index.php?controller=scheduleAdmin&action=confirmWeek&lop=${CONFIG.maLop}&khoi=${CONFIG.khoi}&hocKy=${CONFIG.hocKy}&namHoc=${CONFIG.namHoc}&tuan=${CONFIG.week}`;
+    window.location.href = url;
+}
+
+// ===== CONFIRM SCHEDULE (Lưu học kỳ này) =====
+function confirmSchedule() {
+    const hkName = CONFIG.hocKy == 1 ? 'Học kỳ 1' : 'Học kỳ 2';
+    if(!confirm('Lưu lịch này cho ' + hkName + ' - ' + CONFIG.namHoc + '?')) return;
+    
+    const url = `index.php?controller=scheduleAdmin&action=confirmSchedule&lop=${CONFIG.maLop}&khoi=${CONFIG.khoi}&hocKy=${CONFIG.hocKy}&namHoc=${CONFIG.namHoc}`;
+    window.location.href = url;
+}
+
+// ===== APPLY TO YEAR (Cả 2 học kỳ) =====
+function applyToYear() {
+    if(!confirm('Áp dụng lịch này cho CẢ NĂM (HK1 + HK2) - ' + CONFIG.namHoc + '?')) return;
+    
+    const url = `index.php?controller=scheduleAdmin&action=applyToYear&lop=${CONFIG.maLop}&khoi=${CONFIG.khoi}&namHoc=${CONFIG.namHoc}`;
+    window.location.href = url;
+}
+
+// ===== CANCEL PREVIEW =====
+function cancelPreview() {
+    if(!confirm('Hủy lịch gợi ý này?')) return;
+    
+    const url = `index.php?controller=scheduleAdmin&action=cancelPreview&lop=${CONFIG.maLop}&khoi=${CONFIG.khoi}&hocKy=${CONFIG.hocKy}&namHoc=${CONFIG.namHoc}`;
+    window.location.href = url;
+}
+
+// ===== CLEAR SEMESTER =====
+function clearSemester() {
+    const hkName = CONFIG.hocKy == 1 ? 'Học kỳ 1' : 'Học kỳ 2';
+    if(!confirm('Xóa toàn bộ lịch của ' + hkName + ' - ' + CONFIG.namHoc + '?')) return;
+    
+    const url = `index.php?controller=scheduleAdmin&action=clearSemester&lop=${CONFIG.maLop}&khoi=${CONFIG.khoi}&hocKy=${CONFIG.hocKy}&namHoc=${CONFIG.namHoc}`;
+    window.location.href = url;
+}
+
+// ===== UTILITY FUNCTIONS =====
+function showLoading() {
+    document.getElementById('loadingOverlay').classList.add('active');
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').classList.remove('active');
+}
+
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'}</span>
+        <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Close modal on outside click
+document.getElementById('scheduleModal').addEventListener('click', function(e) {
+    if(e.target === this) {
+        closeModal();
+    }
+});
+
+document.getElementById('applyYearModal').addEventListener('click', function(e) {
+    if(e.target === this) {
+        closeApplyYearModal();
+    }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if(e.key === 'Escape') {
+        closeModal();
+        closeApplyYearModal();
+    }
+});
 </script>
 
 <?php include "views/layout/footer.php"; ?>

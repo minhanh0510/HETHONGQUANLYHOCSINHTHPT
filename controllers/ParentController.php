@@ -13,7 +13,7 @@ class ParentController {
         // Kiểm tra đăng nhập
         if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'parent') {
             $_SESSION['error'] = "❌ Vui lòng đăng nhập với tài khoản phụ huynh!";
-            header("Location: index.php?controller=auth&action=login");
+            header("Location: /PTUD_HETHONGQUANLYHOCSINHC3/index.php?controller=auth&action=login");
             exit;
         }
 

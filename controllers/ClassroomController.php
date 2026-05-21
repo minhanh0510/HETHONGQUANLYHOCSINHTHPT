@@ -61,6 +61,15 @@ class ClassroomController {
         // Lấy thông tin lớp
         $classInfo = $this->model->getClassInfo($maLop);
         
+        // DEBUG: Kiểm tra sĩ số
+        error_log("=== CLASS INFO DEBUG ===");
+        error_log("Class Info: " . print_r($classInfo, true));
+        error_log("Si So value: " . ($classInfo['siSo'] ?? 'NULL'));
+        
+        // Lấy danh sách học sinh trong lớp
+        $studentList = $this->model->getStudentsByClass($maLop);
+        error_log("Number of students in list: " . count($studentList));
+        
         // Lấy danh sách học sinh trong lớp
         $studentList = $this->model->getStudentsByClass($maLop);
         

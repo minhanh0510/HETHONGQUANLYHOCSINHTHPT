@@ -23,6 +23,41 @@ switch ($controller) {
         $ctrl = new StudentController($pdo);
         break;
 
+    case 'scheduleView':
+        require_once "controllers/ScheduleViewController.php";
+        $ctrl = new ScheduleViewController($pdo);
+        
+        // Gọi action tương ứng
+        if ($action == 'parent') {
+            $ctrl->parent();
+        } elseif ($action == 'teacher') {
+            $ctrl->teacher();
+        } else {
+            // Mặc định là student
+            $ctrl->student();
+        }
+        break;
+
+    case 'leaveApplication':
+        require_once "controllers/LeaveApplicationController.php";
+        $ctrl = new LeaveApplicationController($pdo);
+        
+        $action = $_GET['action'] ?? 'index';
+        switch ($action) {
+            case 'index':
+                $ctrl->index();
+                break;
+            case 'store':
+                $ctrl->store();
+                break;
+            case 'cancel':
+                $ctrl->cancel();
+                break;
+            default:
+                $ctrl->index();
+        }
+        break;
+
     case 'studentAdmin':
         require_once "controllers/StudentAdminController.php";
         $ctrl = new StudentAdminController($pdo);
@@ -47,14 +82,58 @@ switch ($controller) {
         require_once "controllers/DepartmentController.php";
         $ctrl = new DepartmentController($pdo);
         break;
+        
+    case 'teacher':
+        require_once "controllers/TeacherController.php";
+        $ctrl = new TeacherController($pdo);
+        break;
+        
+    case 'assignmentTeacher':
+        require_once "controllers/AssignmentTeacherController.php";
+        $ctrl = new AssignmentTeacherController($pdo);
+        break;
+        
+    case 'teacherAssignment':
+        require_once "controllers/TeacherAssignmentController.php";
+        $ctrl = new TeacherAssignmentController($pdo);
+        if ($action === 'getTeachersBySubject') {
+            $ctrl->getTeachersBySubject();
+            exit;
+        }
+        break;
+        
+    case 'supervisorAssignment':
+        require_once "controllers/SupervisorAssignmentController.php";
+        $ctrl = new SupervisorAssignmentController($pdo);
+        
+        if ($action === 'getExamRooms') {
+            $ctrl->getExamRooms();
+            exit;
+        }
+        if ($action === 'getAvailableSupervisors') {
+            $ctrl->getAvailableSupervisors();
+            exit;
+        }
+        if ($action === 'getRemainingSlots') {
+            $ctrl->getRemainingSlots();
+            exit;
+        }
+        if ($action === 'getExamInfo') {
+            $ctrl->getExamInfo();
+            exit;
+        }
+        break;
+    
 
+    case 'examArrangement':
+        require_once "controllers/ExamArrangementController.php";
+        $ctrl = new ExamArrangementController();
+        break;
 
-    //tai
     case 'notification':  
         require_once "controllers/NotificationController.php";
         $ctrl = new NotificationController($pdo);
 
-        // Nếu không có action, tự động điều hướng theo vai trò
         if (!isset($_GET['action'])) {
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
@@ -63,42 +142,55 @@ switch ($controller) {
             $user = $_SESSION['user'] ?? null;
             
             if (!$user) {
-                // Chưa đăng nhập -> chuyển về login
                 header("Location: index.php?controller=auth&action=login");
                 exit;
             }
             
             $vaiTro = strtolower($user['vaiTro'] ?? '');
 
-            // Điều hướng theo vai trò
             if ($vaiTro === 'giaovien') {
-                $action = 'teacherIndex'; // 👩‍🏫 Giáo viên
+                $action = 'teacherIndex';
             } else {
-                $action = 'index'; // 👨‍🎓 Học sinh/Phụ huynh
+                $action = 'index';
             }
         }
         break;
+        
+    case 'notificationTeacher':
+        require_once 'controllers/NotificationTeacherController.php';
+        $ctrl = new NotificationTeacherController($pdo); 
+        break;
+        
     case 'notificationParent':
         require_once "controllers/NotificationParentController.php";
         $ctrl = new NotificationParentController($pdo);
         break;
+        
     case 'examScore':
         require_once "controllers/ExamScoreController.php";
         $ctrl = new ExamScoreController($pdo);
         break;
+        
     case 'account':
         require_once "controllers/AccountController.php";
         $ctrl = new AccountController($pdo);
         break;
+        
     case 'feedbackEvaluation':
         require_once "controllers/FeedbackEvaluationController.php";
         $ctrl = new FeedbackEvaluationController($pdo);
         break;
+        
     case 'roomAssignment':
         require_once "controllers/RoomAssignmentController.php";
         $ctrl = new RoomAssignmentController($pdo);
         break;
-    //tai
+        
+    case 'scoreView':
+        require_once "controllers/ScoreViewController.php";
+        $ctrl = new ScoreViewController($pdo);
+        break;
+        
     case 'admission':
         require_once "controllers/AdmissionController.php";
         $ctrl = new AdmissionController($pdo);
@@ -118,7 +210,32 @@ switch ($controller) {
         require_once "controllers/ClassroomController.php";
         $ctrl = new ClassroomController($pdo);
         break;
+    case 'hanhKiem':
+        require_once "controllers/HanhKiemController.php";
+        $ctrl = new HanhKiemController($pdo);
+        break;
+    case 'assignmentStudent':
+        require_once "controllers/AssignmentStudentController.php";
+        $ctrl = new AssignmentStudentController($pdo);
+        break;
     
+     case 'statistics':
+        require_once "controllers/StatisticsController.php";
+        $ctrl = new StatisticsController($pdo);
+        
+        // Kiểm tra quyền truy cập - chỉ cho Ban Giám Hiệu
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'management') {
+            // Chuyển hướng về trang đăng nhập với thông báo
+            $_SESSION['error'] = "Chỉ Ban Giám Hiệu được truy cập chức năng Thống kê!";
+            header("Location: index.php?controller=auth&action=login");
+            exit;
+        }
+        break;
+
     default:
         die("❌ Controller không tồn tại: $controller");
 }

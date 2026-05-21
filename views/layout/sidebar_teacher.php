@@ -1,145 +1,88 @@
 <?php
-// views/layout/sidebar_teacher.php
+// views/layout/sidebar_teacher.php - UPDATED
 ?>
 <aside class="main-sidebar">
-    <!-- User Info -->
-    <div class="user-panel">
-        <div class="user-avatar">
-            <?php 
-            $name = isset($user['hoVaTen']) ? $user['hoVaTen'] : 'GV';
-            $words = explode(' ', $name);
-            $initials = '';
-            foreach ($words as $word) {
-                if (!empty($word)) {
-                    $initials .= mb_strtoupper(mb_substr($word, 0, 1, 'UTF-8'), 'UTF-8');
-                }
-            }
-            echo mb_substr($initials, 0, 2, 'UTF-8');
-            ?>
-        </div>
-        <div class="user-info">
-            <div class="user-name"><?= isset($user['hoVaTen']) ? htmlspecialchars($user['hoVaTen']) : 'Giáo viên' ?></div>
-        </div>
-        <div class="user-role">Giáo viên</div>
-    </div>
-
     <!-- Menu Title -->
-    <div class="menu-title">MENU CHÍNH</div>
+    <div class="menu-title">GIÁO VIÊN</div>
 
     <!-- Navigation Menu -->
     <nav class="sidebar-menu">
-        <a href="index.php?controller=classroom&action=index" 
-           class="menu-item <?= (!isset($_GET['action']) || $_GET['action'] === 'index') ? 'active' : '' ?>">
-            <i class="fas fa-home"></i>
-            <span>Trang chủ</span>
+        <a href="index.php?controller=teacher&action=dashboard" 
+           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'teacher' && (!isset($_GET['action']) || $_GET['action'] === 'dashboard')) ? 'active' : '' ?>">
+            🏠 Trang chủ
         </a>
 
+        <a href="index.php?controller=scheduleView&action=teacher&view=week" 
+           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'scheduleView' && isset($_GET['action']) && $_GET['action'] === 'teacher') ? 'active' : '' ?>">
+            📅 Thời khóa biểu
+        </a>
+        
         <a href="index.php?controller=classroom&action=manage&maLop=<?= $_GET['maLop'] ?? 'L10A1' ?>" 
-           class="menu-item <?= (isset($_GET['action']) && $_GET['action'] === 'manage') ? 'active' : '' ?>">
-            <i class="fas fa-chalkboard"></i>
-            <span>Quản lý lớp học</span>
+           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'classroom' && isset($_GET['action']) && $_GET['action'] === 'manage') ? 'active' : '' ?>">
+            📚 Quản lý lớp học
         </a>
-
+        
         <a href="index.php?controller=classroom&action=studentList" 
-           class="menu-item <?= (isset($_GET['action']) && $_GET['action'] === 'studentList') ? 'active' : '' ?>">
-            <i class="fas fa-users"></i>
-            <span>Danh sách lớp</span>
+           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'classroom' && isset($_GET['action']) && $_GET['action'] === 'studentList') ? 'active' : '' ?>">
+            👥 Danh sách lớp
+        </a>        
+        
+        <a href="index.php?controller=hanhKiem&action=index" 
+           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'hanhKiem') ? 'active' : '' ?>">
+            ✅ Xếp loại hạnh kiểm
         </a>
-
-        <!-- ✅ SỬA: Đổi action từ 'index' thành 'teacherIndex' -->
-        <a href="index.php?controller=notification&action=teacherIndex" 
-           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'notification') ? 'active' : '' ?>">
-            <i class="fas fa-bell"></i>
-            <span>Thông báo</span>
-            <span class="badge-new">Mới</span>
+        
+        <a href="index.php?controller=assignmentTeacher&action=index" 
+           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'assignmentTeacher') ? 'active' : '' ?>">
+            📝 Quản lý bài tập
+        </a>
+        
+        <a href="index.php?controller=notificationTeacher&action=index" 
+           class="menu-item <?= (isset($_GET['controller']) && $_GET['controller'] === 'notificationTeacher') ? 'active' : '' ?>">
+            📢 Thông báo
         </a>
         <a href="index.php?controller=feedbackEvaluation&action=showClasses" 
            class="menu-item <?= (isset($_GET['action']) && $_GET['action'] === 'showClasses') ? 'active' : '' ?>">
             <i class="fas fa-edit"></i>
             <span>Nhận xét và đánh giá</span>
         </a>
+
     </nav>
 </aside>
 
 <style>
-/* Sidebar - FIX: Để sidebar bắt đầu DƯỚI header */
+/* ===== Sidebar ===== */
 .main-sidebar {
     position: fixed;
     left: 0;
-    top: 60px; /* Thêm khoảng cách cho header */
+    top: 60px;
     width: 250px;
-    height: calc(100vh - 60px); /* Trừ đi chiều cao header */
-    background: #2c3e50;
+    height: calc(100vh - 60px);
+    background: #34495e;
     color: #ecf0f1;
     overflow-y: auto;
-    z-index: 999; /* Giảm z-index xuống thấp hơn header */
+    z-index: 999;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-}
-
-/* User Panel */
-.user-panel {
-    padding: 25px 20px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.user-avatar {
-    width: 70px;
-    height: 70px;
-    margin: 0 auto 12px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #3498db, #2ecc71);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: 700;
-    color: #fff;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-}
-
-.user-info {
-    margin-top: 8px;
-    text-align: center;
-}
-
-.user-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: #ecf0f1;
-    margin-bottom: 0;
-    text-align: center;
-    width: 100%;
-    display: block;
-}
-
-.user-role {
-    font-size: 12px;
-    color: #95a5a6;
-    text-align: center;
-    display: block;
-    margin-top: 5px;
 }
 
 /* Menu Title */
 .menu-title {
-    padding: 18px 20px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #7f8c8d;
-    text-transform: uppercase;
+    padding: 15px 20px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #ecf0f1;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 5px;
 }
 
 /* Menu Items */
 .sidebar-menu {
-    padding: 8px 0;
+    padding: 0;
 }
 
 .menu-item {
-    display: flex;
-    align-items: center;
-    padding: 13px 20px;
+    display: block;
+    padding: 12px 20px;
     color: #ecf0f1;
     text-decoration: none;
     transition: all 0.3s ease;
@@ -147,49 +90,18 @@
     position: relative;
 }
 
-.menu-item i {
-    width: 24px;
-    font-size: 16px;
-    margin-right: 12px;
-}
-
-.menu-item span {
-    font-size: 14px;
-}
-
 .menu-item:hover {
-    background: rgba(52, 152, 219, 0.1);
-    border-left-color: #3498db;
+    background: #3c5a78;
     color: #fff;
     text-decoration: none;
+    border-left-color: #3498db;
 }
 
 .menu-item.active {
-    background: #3498db;
-    border-left-color: #2ecc71;
+    background: #2c3e50;
     color: #fff;
     font-weight: 600;
-}
-
-.menu-item.logout {
-    color: #e74c3c;
-    margin-top: 20px;
-}
-
-.menu-item.logout:hover {
-    background: rgba(231, 76, 60, 0.1);
-    border-left-color: #e74c3c;
-}
-
-/* Badge */
-.badge-new {
-    margin-left: auto;
-    background: #f39c12;
-    color: #fff;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 11px;
-    font-weight: 700;
+    border-left-color: #2ecc71;
 }
 
 /* Scrollbar */
@@ -198,16 +110,16 @@
 }
 
 .main-sidebar::-webkit-scrollbar-track {
-    background: #2c3e50;
+    background: #34495e;
 }
 
 .main-sidebar::-webkit-scrollbar-thumb {
-    background: #34495e;
+    background: #4a6278;
     border-radius: 3px;
 }
 
 .main-sidebar::-webkit-scrollbar-thumb:hover {
-    background: #4a6278;
+    background: #5a7288;
 }
 
 /* Responsive */

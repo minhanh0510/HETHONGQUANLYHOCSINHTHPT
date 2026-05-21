@@ -15,13 +15,26 @@ if ($dayOfWeek < 1 || $dayOfWeek > 6) {
 }
 
 // Chuyển đổi dữ liệu từ DB sang format view
-// Database có 4 trạng thái: CoMat, Vang, DiTre, CoPhep
 $savedAttendance = [];
+$savedNotes = [];
 if (isset($savedAttendanceRaw) && is_array($savedAttendanceRaw)) {
     foreach ($savedAttendanceRaw as $maHS => $data) {
         if (isset($data['trangThai'])) {
-            // Chỉ xử lý CoMat và Vang cho điểm danh cơ bản
-            $savedAttendance[$maHS] = ($data['trangThai'] === 'CoMat') ? 'present' : 'absent';
+            switch ($data['trangThai']) {
+                case 'CoMat':
+                    $savedAttendance[$maHS] = 'present';
+                    break;
+                case 'Vang':
+                case 'CoPhep':
+                    $savedAttendance[$maHS] = 'absent';
+                    break;
+                default:
+                    $savedAttendance[$maHS] = 'present';
+            }
+            
+            if (isset($data['ghiChu']) && !empty($data['ghiChu'])) {
+                $savedNotes[$maHS] = $data['ghiChu'];
+            }
         }
     }
 }
@@ -36,7 +49,6 @@ if ($viewMode === 'week') {
         }
     }
     
-    // Chuyển đổi weekAttendance từ DB sang view format
     if (isset($weekAttendanceRaw) && is_array($weekAttendanceRaw)) {
         $weekAttendance = [];
         foreach ($weekAttendanceRaw as $maHS => $dates) {
@@ -44,7 +56,7 @@ if ($viewMode === 'week') {
                 if (!isset($weekAttendance[$maHS])) {
                     $weekAttendance[$maHS] = [];
                 }
-                $weekAttendance[$maHS][$date] = $status; // Đã được convert trong model
+                $weekAttendance[$maHS][$date] = $status;
             }
         }
     } else {
@@ -54,7 +66,6 @@ if ($viewMode === 'week') {
 
 // Dữ liệu đơn xin nghỉ
 $leaveRequests = $leaveRequests ?? []; 
-// Mảng từ controller: [['maDon', 'maHS', 'hoVaTen', 'ngayNghi', 'lyDo', 'trangThai', 'ngayGui', 'ngayXuLy'], ...]
 $leaveStats = $leaveStats ?? ['total' => 0, 'pending' => 0, 'approved' => 0, 'rejected' => 0];
 
 // Mảng tên thứ tiếng Việt
@@ -172,6 +183,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
                                     <?php foreach ($students as $index => $student): ?>
                                         <?php 
                                         $currentStatus = $savedAttendance[$student['maHS']] ?? 'present';
+                                        $currentNote = $savedNotes[$student['maHS']] ?? '';
                                         ?>
                                         <tr>
                                             <td class="text-center"><?= $index + 1 ?></td>
@@ -197,9 +209,17 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                <button type="button" class="btn-note" title="Thêm ghi chú">
+                                                <button type="button" class="btn-note" 
+                                                        onclick="openNoteModal('<?= $student['maHS'] ?>', '<?= htmlspecialchars($student['hoVaTen']) ?>', '<?= htmlspecialchars($currentNote) ?>')"
+                                                        title="<?= !empty($currentNote) ? htmlspecialchars($currentNote) : 'Thêm ghi chú' ?>">
                                                     <i class="fas fa-comment"></i>
+                                                    <?php if (!empty($currentNote)): ?>
+                                                        <span class="note-indicator" title="Đã có ghi chú">•</span>
+                                                    <?php endif; ?>
                                                 </button>
+                                                <input type="hidden" id="note_<?= $student['maHS'] ?>" 
+                                                       name="notes[<?= $student['maHS'] ?>]" 
+                                                       value="<?= htmlspecialchars($currentNote) ?>">
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -334,12 +354,26 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
                 <div class="requests-list">
                     <?php if (!empty($leaveRequests)): ?>
                         <?php foreach ($leaveRequests as $request): ?>
+                            <?php 
+                            $ngayBatDau = isset($request['ngayBatDau']) ? $request['ngayBatDau'] : '';
+                            $ngayKetThuc = isset($request['ngayKetThuc']) ? $request['ngayKetThuc'] : '';
+                            $soNgayNghi = isset($request['soNgayNghi']) ? $request['soNgayNghi'] : 1;
+                            
+                            $ngayNghiDisplay = '';
+                            if ($ngayBatDau) {
+                                $ngayNghiDisplay = date('d/m/Y', strtotime($ngayBatDau));
+                                if ($ngayKetThuc && $ngayKetThuc != $ngayBatDau) {
+                                    $ngayNghiDisplay .= ' - ' . date('d/m/Y', strtotime($ngayKetThuc));
+                                    $ngayNghiDisplay .= ' (' . $soNgayNghi . ' ngày)';
+                                }
+                            }
+                            ?>
                             <div class="request-card" data-status="<?= htmlspecialchars($request['trangThai']) ?>">
                                 <div class="request-header">
                                     <div class="request-date">
                                         <i class="fas fa-calendar"></i>
                                         <strong>Ngày nghỉ:</strong> 
-                                        <?= date('d/m/Y', strtotime($request['ngayNghi'])) ?>
+                                        <?= htmlspecialchars($ngayNghiDisplay) ?>
                                         <span class="student-info-small">
                                             (<?= htmlspecialchars($request['maHS']) ?> 
                                             <?php if (!empty($request['hoVaTen'])): ?>
@@ -412,23 +446,59 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     <?php endif; ?>
 </div>
 
+<!-- Modal for Notes -->
+<div id="noteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm ghi chú</h3>
+            <button type="button" class="btn-close" onclick="closeNoteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="student-info-modal">
+                <strong id="modalStudentId"></strong>
+                <span id="modalStudentName"></span>
+            </div>
+            <div class="form-group">
+                <label for="noteContent">Ghi chú:</label>
+                <textarea id="noteContent" rows="4" placeholder="Nhập ghi chú cho học sinh này..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" onclick="closeNoteModal()">Hủy</button>
+            <button type="button" class="btn-save" onclick="saveNote()">Lưu ghi chú</button>
+        </div>
+    </div>
+</div>
+
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* Reset CSS */
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+}
 
 .main-content {
     padding: 20px;
-    padding-bottom: 120px; /* Tăng khoảng cách dưới để không bị che */
-    background: #f5f7fa;
+    padding-bottom: 120px;
     min-height: calc(100vh - 60px);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow-y: auto; /* Đảm bảo có thể scroll */
+    overflow-y: auto;
 }
 
+/* Header */
 .content-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .header-left {
@@ -485,6 +555,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
 }
 
+/* Alerts */
 .alert {
     padding: 12px 16px;
     border-radius: 6px;
@@ -513,6 +584,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     color: #c62828;
 }
 
+/* Toolbar */
 .toolbar {
     background: white;
     padding: 12px 16px;
@@ -562,6 +634,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
 }
 
 .btn-nav {
@@ -590,20 +663,24 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
+    min-width: 140px;
 }
 
 .current-date, .current-week {
     font-weight: 600;
     color: #333;
     font-size: 14px;
+    min-width: 160px;
+    text-align: center;
 }
 
+/* Attendance Container */
 .attendance-container, .week-container, .leave-requests-container {
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     overflow: hidden;
-    margin-bottom: 30px; /* Thêm margin để tránh bị che */
+    margin-bottom: 30px;
 }
 
 .quick-actions {
@@ -656,15 +733,17 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     box-shadow: 0 3px 8px rgba(244, 67, 54, 0.3);
 }
 
+/* Tables */
 .table-container {
     overflow-x: auto;
-    max-height: calc(100vh - 420px); /* Giới hạn chiều cao để scroll */
+    max-height: calc(100vh - 420px);
     overflow-y: auto;
 }
 
 .attendance-table, .week-table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 13px;
 }
 
 .attendance-table thead th, .week-table thead th {
@@ -673,7 +752,6 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     padding: 12px 10px;
     text-align: left;
     font-weight: 600;
-    font-size: 13px;
     border-bottom: 2px solid #45a049;
     position: sticky;
     top: 0;
@@ -682,7 +760,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
 
 .attendance-table tbody tr, .week-table tbody tr {
     border-bottom: 1px solid #e0e0e0;
-    transition: all 0.2s;
+    transition: background-color 0.2s;
 }
 
 .attendance-table tbody tr:hover, .week-table tbody tr:hover {
@@ -691,7 +769,6 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
 
 .attendance-table td, .week-table td {
     padding: 12px 10px;
-    font-size: 13px;
     color: #333;
 }
 
@@ -704,10 +781,12 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     color: #1a1a1a;
 }
 
+/* Attendance Options */
 .attendance-options {
     display: flex;
     gap: 12px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .radio-option {
@@ -776,6 +855,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     background: #f44336;
 }
 
+/* Note Button */
 .btn-note {
     width: 30px;
     height: 30px;
@@ -786,6 +866,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     color: #666;
     transition: all 0.2s;
     font-size: 13px;
+    position: relative;
 }
 
 .btn-note:hover {
@@ -794,6 +875,25 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     border-color: #FFC107;
 }
 
+.note-indicator {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: block;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Form Footer */
 .form-footer {
     padding: 16px;
     background: #fafafa;
@@ -835,6 +935,8 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     align-items: center;
     gap: 6px;
     transition: all 0.3s;
+    min-width: 150px;
+    justify-content: center;
 }
 
 .btn-save:hover {
@@ -843,6 +945,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
 }
 
+/* Week View */
 .week-table .sticky-col {
     position: sticky;
     background: #4CAF50;
@@ -864,6 +967,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
 
 .date-col {
     text-align: center;
+    min-width: 80px;
 }
 
 .date-small {
@@ -921,6 +1025,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     font-size: 13px;
 }
 
+/* Leave Requests */
 .section-header {
     padding: 16px 20px;
     border-bottom: 1px solid #e0e0e0;
@@ -1178,6 +1283,198 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     font-size: 15px;
 }
 
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.btn-close:hover {
+    background: #f5f5f5;
+    color: #f44336;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.student-info-modal {
+    background: #f5f7fa;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.student-info-modal strong {
+    color: #4CAF50;
+    margin-right: 8px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancel {
+    padding: 8px 16px;
+    background: #f5f5f5;
+    color: #666;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: #4CAF50;
+    color: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+    font-size: 14px;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast-error {
+    background: #f44336;
+}
+
+.toast i {
+    font-size: 16px;
+}
+
+/* Scroll bar styling */
+.table-container::-webkit-scrollbar,
+.requests-list::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.requests-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.requests-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.requests-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 /* Responsive cho mobile */
 @media (max-width: 768px) {
     .main-content {
@@ -1196,7 +1493,6 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     
     .view-mode {
         width: 100%;
-        flex-wrap: wrap;
     }
     
     .btn-mode {
@@ -1222,6 +1518,7 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     
     .btn-quick {
         flex: 1;
+        justify-content: center;
     }
     
     .table-container {
@@ -1239,7 +1536,6 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
     
     .btn-save {
         width: 100%;
-        justify-content: center;
     }
     
     .request-header {
@@ -1267,38 +1563,20 @@ $daysOfWeek = ['', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ
         font-size: 12px;
         padding: 6px 10px;
     }
-}
-
-/* Scroll bar styling */
-.table-container::-webkit-scrollbar,
-.requests-list::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-.table-container::-webkit-scrollbar-track,
-.requests-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.table-container::-webkit-scrollbar-thumb,
-.requests-list::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-.table-container::-webkit-scrollbar-thumb:hover,
-.requests-list::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    
+    .modal-content {
+        margin: 5% auto;
+        width: 95%;
+    }
 }
 </style>
 
 <script>
-// JavaScript functions - FIXED VERSION
+// JavaScript functions
 function changeView(mode) {
     const maLop = '<?= htmlspecialchars($maLop) ?>';
     const date = document.getElementById('dateInput')?.value || '<?= $selectedDate ?>';
-    window.location.href = `index.php?controller=classroom&action=classAttendance&maLop=${maLop}&viewMode=${mode}&date=${date}`;
+    window.location.href = `index.php?controller=classroom&action=classAttendance&maLop=${maLop}&viewMode=${mode}&date=${date}&refresh=${Date.now()}`;
 }
 
 function changeDate(offset) {
@@ -1306,11 +1584,10 @@ function changeDate(offset) {
     const currentDate = new Date(dateInput.value);
     currentDate.setDate(currentDate.getDate() + offset);
     
-    // Skip Sunday (0) and Saturday (6) if needed
     let dayOfWeek = currentDate.getDay();
-    if (dayOfWeek === 0) { // Sunday
+    if (dayOfWeek === 0) {
         currentDate.setDate(currentDate.getDate() + (offset > 0 ? 1 : -2));
-    } else if (dayOfWeek === 6) { // Saturday
+    } else if (dayOfWeek === 6) {
         currentDate.setDate(currentDate.getDate() + (offset > 0 ? 2 : -1));
     }
     
@@ -1325,7 +1602,7 @@ function changeDate(offset) {
 function onDateChange() {
     const maLop = '<?= htmlspecialchars($maLop) ?>';
     const date = document.getElementById('dateInput').value;
-    window.location.href = `index.php?controller=classroom&action=classAttendance&maLop=${maLop}&viewMode=day&date=${date}`;
+    window.location.href = `index.php?controller=classroom&action=classAttendance&maLop=${maLop}&viewMode=day&date=${date}&t=${Date.now()}`;
 }
 
 function changeWeek(offset) {
@@ -1338,7 +1615,7 @@ function changeWeek(offset) {
     const day = String(currentMonday.getDate()).padStart(2, '0');
     const newDate = `${year}-${month}-${day}`;
     
-    window.location.href = `index.php?controller=classroom&action=classAttendance&maLop=${maLop}&viewMode=week&date=${newDate}`;
+    window.location.href = `index.php?controller=classroom&action=classAttendance&maLop=${maLop}&viewMode=week&date=${newDate}&t=${Date.now()}`;
 }
 
 function markAll(status) {
@@ -1364,11 +1641,9 @@ function filterRequests(status) {
     const cards = document.querySelectorAll('.request-card');
     const tabs = document.querySelectorAll('.filter-tab');
     
-    // Update active tab
     tabs.forEach(tab => tab.classList.remove('active'));
     event.target.closest('.filter-tab').classList.add('active');
     
-    // Filter cards
     cards.forEach(card => {
         if (status === 'all' || card.dataset.status === status) {
             card.classList.remove('hidden');
@@ -1382,20 +1657,117 @@ function exportToExcel() {
     alert('Chức năng xuất Excel đang được phát triển');
 }
 
-// Initialize summary on page load
+// Note modal functionality
+let currentStudentId = '';
+let currentStudentName = '';
+
+function openNoteModal(studentId, studentName, currentNote = '') {
+    currentStudentId = studentId;
+    currentStudentName = studentName;
+    
+    document.getElementById('modalStudentId').textContent = studentId;
+    document.getElementById('modalStudentName').textContent = studentName;
+    
+    const decodedNote = decodeHTMLEntities(currentNote);
+    document.getElementById('noteContent').value = decodedNote;
+    
+    document.getElementById('noteModal').style.display = 'block';
+    
+    setTimeout(() => {
+        document.getElementById('noteContent').focus();
+        document.getElementById('noteContent').select();
+    }, 100);
+}
+
+function decodeHTMLEntities(text) {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+}
+
+function closeNoteModal() {
+    document.getElementById('noteModal').style.display = 'none';
+    currentStudentId = '';
+    currentStudentName = '';
+    document.getElementById('noteContent').value = '';
+}
+
+function saveNote() {
+    const noteContent = document.getElementById('noteContent').value.trim();
+    
+    const hiddenInput = document.getElementById(`note_${currentStudentId}`);
+    if (hiddenInput) {
+        hiddenInput.value = noteContent;
+    }
+    
+    const noteButton = document.querySelector(`button[onclick*="${currentStudentId}"]`);
+    if (noteButton) {
+        noteButton.title = noteContent ? noteContent : 'Thêm ghi chú';
+        
+        let indicator = noteButton.querySelector('.note-indicator');
+        if (noteContent) {
+            if (!indicator) {
+                indicator = document.createElement('span');
+                indicator.className = 'note-indicator';
+                indicator.title = 'Đã có ghi chú';
+                indicator.textContent = '•';
+                noteButton.appendChild(indicator);
+            }
+        } else {
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+    }
+    
+    showToast('Đã lưu ghi chú!', 'success');
+    closeNoteModal();
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('noteModal');
+    if (event.target === modal) {
+        closeNoteModal();
+    }
+}
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeNoteModal();
+    }
+});
+
+// Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize summary if on day view
     const dayView = document.getElementById('attendanceForm');
     if (dayView) {
         updateSummary();
         
-        // Add event listeners to radio buttons
         const radios = document.querySelectorAll('input[type="radio"][name^="attendance"]');
         radios.forEach(radio => {
             radio.addEventListener('change', updateSummary);
         });
         
-        // Form validation
         dayView.addEventListener('submit', function(e) {
             const checkedRadios = document.querySelectorAll('input[type="radio"]:checked').length;
             if (checkedRadios === 0) {
@@ -1403,6 +1775,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Vui lòng điểm danh cho ít nhất một học sinh!');
                 return false;
             }
+            
+            const saveBtn = this.querySelector('.btn-save');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            saveBtn.disabled = true;
+            
+            setTimeout(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }, 3000);
         });
     }
 });

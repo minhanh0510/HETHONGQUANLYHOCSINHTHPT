@@ -83,13 +83,60 @@
 .btn { padding: 6px 14px; border: none; border-radius: 5px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-block; transition: all 0.2s ease-in-out; }
 .btn-primary { background-color: #007bff; color: white; }
 .btn-primary:hover { background-color: #0056b3; }
+/* ===== NÚT LƯU TOÀN BỘ ===== */
+.btn-success {
+    margin-top: 16px;
+    padding: 10px 22px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(34, 197, 94, 0.35);
+    transition: all 0.25s ease;
+}
+
+/* Hover */
+.btn-success:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(90deg, #16a34a, #15803d);
+    box-shadow: 0 12px 26px rgba(34, 197, 94, 0.45);
+}
+
+/* Click */
+.btn-success:active {
+    transform: scale(0.96);
+}
+
+/* Focus (tab) */
+.btn-success:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.35);
+}
+/* ===== NÚT LƯU BÊN PHẢI ===== */
+.btn-success {
+    display: inline-flex;
+    margin: 20px 0 0 auto;
+}
+
+/* Đảm bảo form là flex để nút đẩy sang phải */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
 </style>
 <!-- Container cho toast -->
 <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
 <div class="main-content">
     <h2>📝 Nhận xét & đánh giá học sinh</h2>
-    <p>Nhập nhận xét cho tất cả học sinh trong lớp.</p>
+    <p>Nhập nhận xét cho học sinh trong lớp.</p>
 
     <form method="POST">
         <table class="data-table">
@@ -108,10 +155,10 @@
                             <td><?= $index + 1 ?></td>
                             <td><?= htmlspecialchars($student['hoVaTen']) ?></td>
                             <td>
-                                <textarea name="students[<?= $student['maHS'] ?>][nhanXet]" required></textarea>
+                                <textarea name="students[<?= $student['maHS'] ?>][nhanXet]" ></textarea>
                             </td>
                             <td>
-                                <textarea name="students[<?= $student['maHS'] ?>][danhGia]" required></textarea>
+                                <textarea name="students[<?= $student['maHS'] ?>][danhGia]" ></textarea>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -123,7 +170,7 @@
             </tbody>
         </table>
 
-        <button type="submit" class="btn btn-success">💾 Lưu toàn bộ</button>
+        <button type="submit" class="btn btn-success">💾 Lưu </button>
     </form>
 </div>
 
@@ -157,4 +204,59 @@ function showToast(message, type = 'success', duration = 2000) {
     showToast("<?= $_SESSION['error'] ?>", 'error');
     <?php unset($_SESSION['error']); ?>
 <?php endif; ?>
+</script>
+<script>
+/* ===== VALIDATE: NHẬP 1 HOẶC NHIỀU HS, MỖI HS PHẢI ĐỦ 2 Ô ===== */
+document.querySelector("form").addEventListener("submit", function (e) {
+    const rows = document.querySelectorAll(".data-table tbody tr");
+    let hasAtLeastOneStudent = false;
+    let isValid = true;
+
+    rows.forEach(row => {
+        const textareas = row.querySelectorAll("textarea");
+
+        if (textareas.length === 2) {
+            const nhanXet = textareas[0].value.trim();
+            const danhGia = textareas[1].value.trim();
+
+            // Nếu cả 2 đều trống → bỏ qua
+            if (nhanXet === "" && danhGia === "") {
+                textareas.forEach(t => t.style.borderColor = "#d0d7de");
+                return;
+            }
+
+            // Có nhập ít nhất 1 học sinh
+            hasAtLeastOneStudent = true;
+
+            // Nếu chỉ nhập 1 trong 2 → lỗi
+            if (nhanXet === "" || danhGia === "") {
+                isValid = false;
+
+                textareas.forEach(t => {
+                    if (t.value.trim() === "") {
+                        t.style.borderColor = "#ef4444"; // đỏ
+                    } else {
+                        t.style.borderColor = "#22c55e"; // xanh
+                    }
+                });
+            } else {
+                // Nhập đủ 2 → hợp lệ
+                textareas.forEach(t => t.style.borderColor = "#22c55e");
+            }
+        }
+    });
+
+    // Không nhập học sinh nào
+    if (!hasAtLeastOneStudent) {
+        e.preventDefault();
+        showToast("⚠️ Vui lòng nhập nhận xét và đánh giá cho ít nhất 1 học sinh!", "error", 3000);
+        return;
+    }
+
+    // Có học sinh nhưng nhập thiếu
+    if (!isValid) {
+        e.preventDefault();
+        showToast("⚠️ Với mỗi học sinh đã nhập, bạn phải nhập ĐẦY ĐỦ nhận xét và đánh giá!", "error", 3000);
+    }
+});
 </script>

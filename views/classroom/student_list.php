@@ -5,612 +5,555 @@ include "views/layout/sidebar_teacher.php";
 ?>
 
 <style>
-/* ================================================= */
-/* RESET & BASE STYLES */
-/* ================================================= */
-html, body {
-    height: auto;
+* {
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    font-family: 'Arial', sans-serif; /* Cải thiện font cơ bản */
-    line-height: 1.6;
-}
-
-.content-wrapper {
-    margin-left: 250px;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f4f6f9 0%, #e9ecef 100%); /* Gradient nền nhẹ */
-    padding: 30px 30px 50px 30px;
-    width: calc(100vw - 250px);
     box-sizing: border-box;
-    border-radius: 0 0 15px 15px; /* Bo góc nhẹ cho wrapper */
 }
 
-/* ================================================= */
-/* BREADCRUMB */
-/* ================================================= */
-.breadcrumb {
-    background: rgba(255, 255, 255, 0.8);
-    padding: 15px 20px;
-    margin: 0 0 25px 0;
-    list-style: none;
-    display: flex;
-    font-size: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.breadcrumb-item {
-    display: inline-block;
-}
-
-.breadcrumb-item + .breadcrumb-item::before {
-    content: "/";
-    padding: 0 10px;
-    color: #6c757d;
-}
-
-.breadcrumb-item.active {
-    color: #6c757d;
-    font-weight: 500;
-}
-
-.breadcrumb-item a {
-    color: #28a745; /* Màu xanh lá cho links */
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.breadcrumb-item a:hover {
-    color: #218838;
-    text-decoration: underline;
-}
-
-/* ================================================= */
-/* CLASS INFO CARD */
-/* ================================================= */
-.class-info-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 35px;
-    border-radius: 15px;
-    margin-bottom: 25px;
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    width: 100%;
-    box-sizing: border-box;
-    position: relative;
+html, body {
+    height: 100%;
     overflow: hidden;
 }
 
-.class-info-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    pointer-events: none;
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
 }
 
-.class-info-card h2 {
-    margin: 0 0 25px 0;
-    font-size: 34px;
-    font-weight: 700;
+/* Main Content - Full Height with Scroll */
+.main-content {
+    padding: 15px;
+    height: calc(100vh - 60px);
+    margin-left: 10px;
+    width: calc(100% - 300px);
     display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    margin-bottom: 15px;
+    flex-shrink: 0;
     gap: 15px;
-    position: relative;
-    z-index: 1;
 }
 
-.class-info-card h2 i {
-    font-size: 38px;
-}
-
-.class-info-details {
-    display: flex;
-    gap: 60px;
-    font-size: 16px;
-    flex-wrap: wrap;
-    position: relative;
-    z-index: 1;
-}
-
-.class-info-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: transform 0.3s;
-}
-
-.class-info-item:hover {
-    transform: translateY(-3px);
-}
-
-.class-info-item i {
-    font-size: 22px;
-    opacity: 0.9;
-}
-
-/* ================================================= */
-/* SEARCH BOX */
-/* ================================================= */
-.search-box {
-    background: #fff;
-    padding: 30px 35px;
-    border-radius: 15px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    box-sizing: border-box;
-    border: 1px solid #e9ecef;
-}
-
-.search-box h3 {
-    margin: 0 0 25px 0;
+.page-title {
     font-size: 20px;
-    color: #333;
     font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s;
+    white-space: nowrap;
+    height: 36px;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+/* Info Card */
+.info-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,.08);
+    padding: 15px;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.info-card h3 {
+    margin-bottom: 12px;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+    font-size: 16px;
     display: flex;
     align-items: center;
+    gap: 8px;
+}
+
+.class-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
+}
+
+.info-item {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+}
+
+.info-item strong {
+    display: block;
+    color: #555;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.info-item span {
+    display: block;
+    font-size: 14px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* Search Section */
+.search-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,.08);
+    padding: 15px;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.search-card h3 {
+    margin-bottom: 12px;
+    color: #2c3e50;
+    border-bottom: 2px solid #27ae60;
+    padding-bottom: 8px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .search-form {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr auto auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.form-group {
     display: flex;
-    gap: 20px;
-    align-items: flex-end;
-    flex-wrap: wrap;
-}
-
-.search-form .form-group {
-    display: inline-flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    gap: 5px;
 }
 
-.search-form label {
-    font-size: 15px;
+.form-group label {
+    font-size: 12px;
     color: #555;
-    white-space: nowrap;
     font-weight: 500;
-    display: block;
 }
 
-.search-form input[type="text"],
-.search-form select {
-    padding: 12px 18px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
-    font-size: 15px;
-    min-width: 240px;
-    height: 48px;
+.form-group input,
+.form-group select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 13px;
     transition: all 0.3s;
-    box-sizing: border-box;
-    background: #f8f9fa;
+    height: 36px;
 }
 
-.search-form input[type="text"]:focus,
-.search-form select:focus {
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
-    border-color: #28a745; /* Màu xanh lá cho focus */
-    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15);
-    background: #fff;
-}
-
-.search-form button,
-.search-form a {
-    padding: 12px 28px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 15px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.3s;
-    text-decoration: none;
-    font-weight: 600;
-    height: 48px;
-    box-sizing: border-box;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
 }
 
 .btn-search {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: #27ae60;
     color: white;
+    padding: 0 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+    height: 36px;
 }
 
 .btn-search:hover {
-    background: linear-gradient(135deg, #218838 0%, #17a2b8 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    background: #229954;
 }
 
 .btn-reset {
-    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    background: #95a5a6;
     color: white;
+    padding: 0 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+    height: 36px;
 }
 
 .btn-reset:hover {
-    background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+    background: #7f8c8d;
 }
 
-/* ================================================= */
-/* TABLE CONTAINER */
-/* ================================================= */
+/* Table Container */
 .table-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: visible; /* Không có scroll cục bộ */
+}
+
+.table-card {
     background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 25px;
-    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,.08);
+    overflow: visible; /* Không có overflow */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Table Wrapper - KHÔNG CÓ SCROLL */
 .table-wrapper {
-    overflow-x: auto;
-    overflow-y: visible;
+    flex: 1;
+    overflow: visible; /* Không có scroll cục bộ */
+    min-height: auto;
 }
 
-.table-wrapper::-webkit-scrollbar {
-    height: 10px;
-}
-
-.table-wrapper::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-}
-
-.table-wrapper::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #5568d3 0%, #6a5acd 100%);
-}
-
-/* ================================================= */
-/* TABLE STYLING */
-/* ================================================= */
-.student-list-table {
+.table-responsive {
     width: 100%;
-    min-width: 1200px;
-    border-collapse: collapse;
-    margin: 0;
-    font-size: 15px;
+    overflow: visible;
 }
 
-.student-list-table thead th {
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: auto; /* Để bảng tự động điều chỉnh kích thước */
+}
+
+.data-table thead {
     background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-    padding: 16px 14px;
+}
+
+.data-table th {
+    padding: 10px 8px;
     text-align: center;
     font-weight: 600;
     color: #495057;
     border-bottom: 2px solid #dee2e6;
     white-space: nowrap;
-    font-size: 14px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    font-size: 12px;
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    z-index: 10;
 }
 
-.student-list-table tbody td {
-    padding: 14px 12px;
+.data-table td {
+    padding: 8px 8px;
     border-bottom: 1px solid #e9ecef;
-    text-align: center;
+    color: #2c3e50;
     vertical-align: middle;
-    font-size: 15px;
-    color: #495057;
-    transition: background 0.3s;
+    white-space: nowrap;
 }
 
-.student-list-table tbody td.text-left {
-    text-align: left;
-    padding-left: 18px;
+.data-table tbody tr {
+    transition: all 0.2s;
 }
 
-.student-list-table tbody tr {
-    transition: all 0.3s;
+.data-table tbody tr:hover {
+    background: #f8f9fa;
 }
 
-.student-list-table tbody tr:hover {
-    background: linear-gradient(90deg, #f8f9fc 0%, #e3f2fd 100%);
-    transform: scale(1.005);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.student-list-table tbody tr:nth-child(even) {
-    background: #f9f9f9; /* Stripes nhẹ */
-}
-
-.student-list-table tbody tr:last-child td {
+.data-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.student-list-table .checkbox-col {
-    width: 60px;
-    text-align: center;
+/* Không cần đặt width cố định cho cột */
+/* Để bảng tự động co giãn */
+
+/* Text alignment */
+.text-center {
+    text-align: center !important;
 }
 
-.student-list-table input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+.text-left {
+    text-align: left !important;
+}
+
+/* Checkbox */
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
     cursor: pointer;
-    accent-color: #28a745;
-    border-radius: 4px;
+    accent-color: #3498db;
 }
 
-/* Column widths */
-.col-stt { 
-    width: 70px;
-    font-weight: 500;
-}
-
-.col-mahs { 
-    width: 130px;
+/* Student code */
+.student-code {
+    color: #3498db;
+    font-weight: 600;
     font-family: 'Courier New', monospace;
-    color: #d63384;
-    font-weight: 500;
+    display: inline-block;
+    font-size: 12px;
 }
 
-.col-hoten { 
-    min-width: 180px;
-    max-width: 250px;
-    font-weight: 500;
-    color: #212529;
-}
-
-.col-ngaysinh { 
-    width: 110px;
-}
-
-.col-lop { 
-    width: 70px;
-    font-weight: 500;
-}
-
-.col-gioitinh { 
-    width: 90px;
-}
-
-.col-dantoc { 
-    width: 90px;
-}
-
-.col-diachi { 
-    min-width: 300px;
-    max-width: 500px;
-    word-wrap: break-word;
-    white-space: normal;
-}
-
-.sort-icon,
-.filter-icon {
-    color: #adb5bd;
-    font-size: 13px;
-    margin-left: 8px;
-    cursor: pointer;
-    transition: color 0.3s, transform 0.3s;
-}
-
-.sort-icon:hover,
-.filter-icon:hover {
-    color: #28a745;
-    transform: scale(1.2);
-}
-
-/* ================================================= */
-/* TABLE FOOTER */
-/* ================================================= */
-.table-footer {
-    padding: 18px 30px;
-    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-    border-top: 2px solid #dee2e6;
-    font-size: 15px;
-    font-weight: 600;
-    color: #495057;
-}
-
-/* ================================================= */
-/* PAGINATION */
-/* ================================================= */
-.pagination-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 30px;
-    background: #fff;
-    border-top: 1px solid #dee2e6;
-}
-
-.pagination-info {
-    font-size: 15px;
-    color: #6c757d;
-}
-
-.pagination-info strong {
-    color: #495057;
-    font-weight: 600;
-}
-
-.pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.pagination-controls input {
-    width: 75px;
-    padding: 8px 12px;
-    border: 2px solid #dee2e6;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 15px;
-    font-weight: 500;
-    transition: border-color 0.3s;
-}
-
-.pagination-controls input:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
-}
-
-.pagination-controls button {
-    padding: 8px 14px;
-    border: 2px solid #dee2e6;
-    background: white;
-    cursor: pointer;
-    border-radius: 8px;
-    color: #6c757d;
-    transition: all 0.3s;
-    font-size: 18px;
-}
-
-.pagination-controls button:hover:not(:disabled) {
-    background: #28a745;
-    border-color: #28a745;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-}
-
-.pagination-controls button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* ================================================= */
-/* EMPTY STATE */
-/* ================================================= */
+/* Empty state */
 .empty-state {
     text-align: center;
-    padding: 80px 20px;
-    color: #adb5bd;
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    padding: 40px 15px;
+    color: #95a5a6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
 }
 
 .empty-state i {
-    font-size: 80px;
-    margin-bottom: 25px;
-    display: block;
-    opacity: 0.6;
-    color: #28a745;
+    font-size: 40px;
+    margin-bottom: 15px;
+    opacity: 0.4;
 }
 
 .empty-state p {
-    font-size: 18px;
-    margin: 0;
-    color: #6c757d;
+    font-size: 14px;
+    color: #7f8c8d;
+    max-width: 250px;
 }
 
-/* ================================================= */
-/* RESPONSIVE */
-/* ================================================= */
-@media (max-width: 768px) {
-    .content-wrapper {
+/* Table footer */
+.table-footer {
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    font-size: 13px;
+    color: #495057;
+    flex-shrink: 0;
+}
+
+.table-footer strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Alert */
+.alert {
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    border-left: 3px solid #ffc107;
+    color: #856404;
+}
+
+/* Custom Scrollbar cho main-content */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .main-content {
+        width: calc(100% - 260px);
+        padding: 12px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .main-content {
         margin-left: 0;
         width: 100%;
-        padding: 20px;
-    }
-    
-    .class-info-card {
-        padding: 25px;
-    }
-    
-    .class-info-card h2 {
-        font-size: 28px;
-    }
-    
-    .class-info-details {
-        flex-direction: column;
-        gap: 20px;
-    }
-    
-    .search-box {
-        padding: 25px;
+        padding: 10px;
     }
     
     .search-form {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .btn-reset {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-header {
         flex-direction: column;
-        align-items: stretch;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 12px;
     }
     
-    .search-form .form-group {
-        width: 100%;
+    .page-title {
+        font-size: 18px;
     }
     
-    .search-form input[type="text"],
-    .search-form select,
-    .search-form button,
-    .search-form a {
-        width: 100%;
-        min-width: auto;
+    .search-form {
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
     
-    /* Ẩn một số cột trên mobile để tiết kiệm không gian */
-    .col-dantoc,
-    .col-diachi {
+    .btn-reset {
+        grid-column: span 1;
+    }
+    
+    .class-info-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .info-card,
+    .search-card {
+        padding: 12px;
+    }
+    
+    .data-table {
+        font-size: 12px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 6px 5px;
+    }
+    
+    /* Ẩn cột không quan trọng */
+    .data-table th:nth-child(1),
+    .data-table td:nth-child(1),
+    .data-table th:nth-child(8),
+    .data-table td:nth-child(8) {
         display: none;
     }
     
-    .pagination-container {
-        flex-direction: column;
-        gap: 20px;
-        align-items: stretch;
+    .empty-state {
+        padding: 30px 10px;
+        min-height: 150px;
     }
     
-    .pagination-controls {
-        justify-content: center;
+    .empty-state i {
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 8px;
+    }
+    
+    .page-title {
+        font-size: 16px;
+    }
+    
+    .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        height: 32px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .btn-search,
+    .btn-reset {
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .empty-state {
+        padding: 20px 8px;
+        min-height: 120px;
+    }
+    
+    .empty-state i {
+        font-size: 28px;
+    }
+    
+    .empty-state p {
+        font-size: 12px;
     }
 }
 </style>
 
-<div class="content-wrapper">
-    <!-- Breadcrumb -->
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.php?controller=classroom&action=index">Trang chủ</a></li>
-        <li class="breadcrumb-item"><a href="index.php?controller=classroom&action=manage&maLop=<?= $_GET['maLop'] ?? '' ?>">Quản lý lớp chủ nhiệm</a></li>
-        <li class="breadcrumb-item active">Danh sách học sinh lớp <?= htmlspecialchars($classroom['tenLop'] ?? 'N/A') ?></li>
-    </ol>
+<div class="main-content">
+    <!-- Page Header -->
+    <div class="content-header">
+        <h1 class="page-title">Danh sách học sinh lớp <?= htmlspecialchars($classroom['tenLop'] ?? '10A1') ?></h1>
+        <a href="index.php?controller=classroom&action=manage&maLop=<?= $_GET['maLop'] ?? '' ?>" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
 
-    <!-- Class Info Card -->
-    <div class="class-info-card">
-        <h2>
-            <i class="fas fa-school"></i>
-            <?= htmlspecialchars($classroom['tenLop'] ?? '10A1') ?>
-        </h2>
-        <div class="class-info-details">
-            <div class="class-info-item">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <span>GVCN: <strong><?= htmlspecialchars($classroom['tenGVCN'] ?? $user['hoVaTen'] ?? 'Lê Văn Toàn') ?></strong></span>
+    <!-- Class Info -->
+    <div class="info-card">
+        <h3><i class="fas fa-info-circle"></i> Thông tin lớp học</h3>
+        <div class="class-info-grid">
+            <div class="info-item">
+                <strong>Giáo viên chủ nhiệm:</strong>
+                <span><?= htmlspecialchars($classroom['tenGVCN'] ?? $user['hoVaTen'] ?? 'Lê Văn Toàn') ?></span>
             </div>
-            <div class="class-info-item">
-                <i class="fas fa-users"></i>
-                               <span>Sĩ số: <strong><?= count($studentList) ?> học sinh</strong></span>
+            <div class="info-item">
+                <strong>Sĩ số:</strong>
+                <span><?= count($studentList) ?> học sinh</span>
             </div>
-            <div class="class-info-item">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Năm học: <strong>2024-2025</strong></span>
+            <div class="info-item">
+                <strong>Năm học:</strong>
+                <span>2024-2025</span>
             </div>
         </div>
     </div>
 
-    <!-- Search Box -->
-    <div class="search-box">
+    <!-- Search Section -->
+    <div class="search-card">
         <h3><i class="fas fa-search"></i> Tìm kiếm học sinh</h3>
         <form method="GET" class="search-form">
             <input type="hidden" name="controller" value="classroom">
@@ -620,18 +563,18 @@ html, body {
             <?php endif; ?>
             
             <div class="form-group">
-                <label for="keyword">Từ khóa:</label>
+                <label for="keyword">Tìm kiếm</label>
                 <input type="text" 
-                        name="keyword" 
-                        id="keyword" 
-                        placeholder="Nhập tên, mã học sinh..." 
-                        value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
+                       name="keyword" 
+                       id="keyword" 
+                       placeholder="Nhập tên hoặc mã học sinh..." 
+                       value="<?= htmlspecialchars($_GET['keyword'] ?? '') ?>">
             </div>
             
             <div class="form-group">
-                <label for="gioiTinh">Giới tính:</label>
+                <label for="gioiTinh">Giới tính</label>
                 <select name="gioiTinh" id="gioiTinh">
-                    <option value="">-- Tất cả --</option>
+                    <option value="">Tất cả</option>
                     <option value="Nam" <?= (isset($_GET['gioiTinh']) && $_GET['gioiTinh'] === 'Nam') ? 'selected' : '' ?>>Nam</option>
                     <option value="Nữ" <?= (isset($_GET['gioiTinh']) && $_GET['gioiTinh'] === 'Nữ') ? 'selected' : '' ?>>Nữ</option>
                 </select>
@@ -650,113 +593,77 @@ html, body {
 
     <!-- Table Container -->
     <div class="table-container">
-        <div class="table-wrapper">
-            <table class="student-list-table">
-                <thead>
-                    <tr>
-                        <th class="checkbox-col">
-                            <input type="checkbox" id="selectAll">
-                        </th>
-                        <th class="col-stt">
-                            STT
-                            <i class="fas fa-sort sort-icon"></i>
-                        </th>
-                        <th class="col-mahs">
-                            Mã học sinh
-                            <i class="fas fa-sort sort-icon"></i>
-                        </th>
-                        <th class="col-hoten">
-                            Họ tên
-                            <i class="fas fa-sort sort-icon"></i>
-                        </th>
-                        <th class="col-ngaysinh">
-                            Ngày sinh
-                            <i class="far fa-calendar-alt filter-icon"></i>
-                        </th>
-                        <th class="col-lop">
-                            Lớp
-                            <i class="fas fa-caret-down sort-icon"></i>
-                        </th>
-                        <th class="col-gioitinh">
-                            Giới tính
-                            <i class="fas fa-caret-down sort-icon"></i>
-                        </th>
-                        <th class="col-dantoc">
-                            Dân tộc
-                            <i class="fas fa-caret-down sort-icon"></i>
-                        </th>
-                        <th class="col-diachi">
-                            Chỗ ở hiện tại
-                            <i class="fas fa-filter filter-icon"></i>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($studentList)): ?>
-                        <tr>
-                            <td colspan="9" class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p>Không tìm thấy học sinh nào</p>
-                            </td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($studentList as $index => $student): ?>
+        <div class="table-card">
+            <div class="table-wrapper">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
                             <tr>
-                                <td class="checkbox-col">
-                                    <input type="checkbox" class="student-checkbox" value="<?= $student['maHS'] ?>">
-                                </td>
-                                <td><?= $index + 1 ?></td>
-                                <td class="col-mahs"><?= htmlspecialchars($student['maHS']) ?></td>
-                                <td class="text-left col-hoten"><?= htmlspecialchars($student['hoVaTen']) ?></td>
-                                <td><?= date('d/m/Y', strtotime($student['ngaySinh'])) ?></td>
-                                <td><?= htmlspecialchars($classroom['tenLop'] ?? $student['tenLop'] ?? 'N/A') ?></td>
-                                <td><?= htmlspecialchars($student['gioiTinh']) ?></td>
-                                <td>Kinh</td>
-                                <td class="text-left"><?= htmlspecialchars($student['diaChi'] ?? 'Chưa cập nhật') ?></td>
+                                <th>
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>STT</th>
+                                <th>Mã học sinh</th>
+                                <th>Họ và tên</th>
+                                <th>Ngày sinh</th>
+                                <th>Lớp</th>
+                                <th>Giới tính</th>
+                                <th>Dân tộc</th>
+                                <th>Địa chỉ</th>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Table Footer -->
-        <div class="table-footer">
-            Tổng số <?= count($studentList) ?> học sinh
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination-container">
-            <div class="pagination-info">
-                Trang <strong>1</strong> trên tổng số <strong>1</strong> trang
+                        </thead>
+                        <tbody>
+                            <?php if (empty($studentList)): ?>
+                                <tr>
+                                    <td colspan="9" class="empty-state">
+                                        <i class="fas fa-inbox"></i>
+                                        <p>Không tìm thấy học sinh nào</p>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($studentList as $index => $student): ?>
+                                    <tr>
+                                        <td class="text-center">
+                                            <input type="checkbox" class="student-checkbox" value="<?= htmlspecialchars($student['maHS']) ?>">
+                                        </td>
+                                        <td class="text-center"><?= $index + 1 ?></td>
+                                        <td class="text-center">
+                                            <span class="student-code"><?= htmlspecialchars($student['maHS']) ?></span>
+                                        </td>
+                                        <td class="text-left">
+                                            <strong><?= htmlspecialchars($student['hoVaTen']) ?></strong>
+                                        </td>
+                                        <td class="text-center"><?= date('d/m/Y', strtotime($student['ngaySinh'])) ?></td>
+                                        <td class="text-center"><?= htmlspecialchars($classroom['tenLop'] ?? $student['tenLop'] ?? 'N/A') ?></td>
+                                        <td class="text-center"><?= htmlspecialchars($student['gioiTinh']) ?></td>
+                                        <td class="text-center">Kinh</td>
+                                        <td class="text-left">
+                                            <?= htmlspecialchars($student['diaChi'] ?? 'Chưa cập nhật') ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="pagination-controls">
-                <button disabled title="Trang đầu">
-                    <i class="fas fa-angle-double-left"></i>
-                </button>
-                <button disabled title="Trang trước">
-                    <i class="fas fa-angle-left"></i>
-                </button>
-                <input type="number" value="1" min="1" max="1" readonly>
-                <button disabled title="Trang sau">
-                    <i class="fas fa-angle-right"></i>
-                </button>
-                <button disabled title="Trang cuối">
-                    <i class="fas fa-angle-double-right"></i>
-                </button>
+
+            <!-- Table Footer -->
+            <div class="table-footer">
+                Tổng số: <strong><?= count($studentList) ?> học sinh</strong>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// Select all checkbox functionality
+// Select all checkbox
 document.getElementById('selectAll')?.addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.student-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
 });
 
-// Individual checkbox update select all
+// Update select all when individual checkboxes change
 document.querySelectorAll('.student-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', function() {
         const allCheckboxes = document.querySelectorAll('.student-checkbox');

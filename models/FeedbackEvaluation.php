@@ -8,9 +8,18 @@ class FeedbackEvaluation {
     }
 
     // Danh sách lớp
-    public function getClasses() {
-        $sql = "SELECT maLop, tenLop FROM LOP ORDER BY tenLop";
-        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    public function getClasses($tenDangNhap) {
+        $sql = "SELECT DISTINCT l.maLop, l.tenLop
+                FROM PCGVBM p
+                INNER JOIN LOP l ON p.maLop = l.maLop
+                WHERE p.maGV = :tenDangNhap
+                ORDER BY l.tenLop";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(':tenDangNhap', $tenDangNhap);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Danh sách học sinh theo lớp
